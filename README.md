@@ -1,0 +1,1 @@
+### This is Go version of studybud project which was developed with Django by Denis Ivy. 
