@@ -8,6 +8,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type HTTPTransporter interface {
+	Start()
+	Notify() <-chan error
+	Shutdown(ctx context.Context) error
+	AddHandler(httpMethod HttpMethod, path string, f func(w http.ResponseWriter, r *http.Request))
+}
+
 type HttpServer struct {
 	server          *http.Server
 	router          *chi.Mux
@@ -17,10 +24,28 @@ type HttpServer struct {
 	httpAddress     string
 }
 
+func NewHTTPServer(httpAddress string) HTTPTransporter {
+	newServer := new(HttpServer)
+	router := chi.NewRouter()
+
+	httpServer := new(http.Server)
+	httpServer.Addr = httpAddress
+	httpServer.Handler = router
+	httpServer.WriteTimeout = _defaultWriteTimeout
+	httpServer.ReadTimeout = _defaultReadTimeout
+	httpServer.ReadHeaderTimeout = _defaultReadHeaderTimeout
+
+	newServer.server = httpServer
+	newServer.router = router
+	newServer.httpAddress = httpAddress
+
+	return newServer
+}
+
 func (s *HttpServer) Start() {
-	go func ()  {
+	go func() {
 		s.notify <- s.server.ListenAndServe()
-		close(s.notify)	
+		close(s.notify)
 	}()
 }
 

@@ -12,7 +12,8 @@ const (
 )
 
 const (
-	_defaultReadTimeout     = 5 * time.Second
-	_defaultWriteTimeout    = 5 * time.Second
-	_defaultShutdownTimeout = 3 * time.Second
+	_defaultReadTimeout       = 5 * time.Second
+	_defaultWriteTimeout      = 5 * time.Second
+	_defaultShutdownTimeout   = 3 * time.Second
+	_defaultReadHeaderTimeout = 5 * time.Second
 )
