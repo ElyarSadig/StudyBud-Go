@@ -1,16 +1,15 @@
 package main
 
 import (
-	"net/http"
+	"log"
 
-	"github.com/elyarsadig/studybud-go/transport"
+	"github.com/elyarsadig/studybud-go/pkg/logger"
 )
 
 func main() {
-	server := transport.NewHTTPServer(":8080")
-	server.AddHandler(transport.GET, "/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Everything is Ok!"))
-	})
-	server.Start()
-	<-server.Notify()
+	logger, err := logger.New(logger.JSON, logger.DebugLevel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger.Debug("This is a start!", "start", "end")
 }
