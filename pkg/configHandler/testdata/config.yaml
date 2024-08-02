@@ -1,0 +1,12 @@
+development: true
+
+admin:
+  first_name: "admin"
+  last_name: "admin"
+  email: "admin@gmail.com"
+  password: "password"
+  phone: "phone"
+
+extra_data:
+  foo: "bar"
+  bar: 1234
