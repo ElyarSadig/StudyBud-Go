@@ -1,0 +1,79 @@
+version: "3"
+services:
+  db:
+    restart: always
+    image: postgres:latest
+    hostname: dbHost
+    env_file:
+      - .env
+    environment:
+      TZ: "Asia/Tehran"
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: studybud_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USERNAME} -d studybud_db"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - database
+  redis:
+    restart: always
+    image: "redis:6.2-alpine"
+    hostname: redisHost
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 1s
+      retries: 10
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - database
+  studybud:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: studybudHost
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+      - database
+    volumes:
+      - ../configs/config-local.yml:/etc/app/config.yml
+      - ../configs/service_info.yml:/configs/service_info.yml
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sS http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+networks:
+  internal:
+    external: true
+  database:
+    external: true
+
+volumes:
+  db_data: {}
+  redis_data: {}
