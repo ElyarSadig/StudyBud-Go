@@ -46,7 +46,7 @@ type Sentinel struct {
 
 type Database struct {
 	Name     string `yaml:"name" json:"name"`
-	Host     string `yaml:"name" json:"host"`
+	Host     string `yaml:"host" json:"host"`
 	Port     string `yaml:"port" json:"port"`
 	User     string `yaml:"user" json:"user"`
 	Password string `yaml:"password" json:"password"`

@@ -2,11 +2,12 @@ package migrations
 
 import (
 	"github.com/elyarsadig/studybud-go/internal/domain"
+	"github.com/elyarsadig/studybud-go/pkg/logger"
 	"gorm.io/gorm"
 )
 
-func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+func Migrate(db *gorm.DB, logging logger.Logger) error {
+	err := db.AutoMigrate(
 		&domain.AuthGroup{},
 		&domain.AuthPermission{},
 		&domain.AuthGroupPermission{},
@@ -19,4 +20,9 @@ func Migrate(db *gorm.DB) error {
 		&domain.UserPermission{},
 		&domain.ContentType{},
 	)
+	if err != nil {
+		return err
+	}
+	logging.Info("successfully migrated the DB")
+	return nil
 }
