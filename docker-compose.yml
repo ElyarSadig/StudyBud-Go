@@ -8,11 +8,11 @@ services:
       - .env
     environment:
       TZ: "Asia/Tehran"
-      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: studybud_db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USERNAME} -d studybud_db"]
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER} -d studybud_db"]
       interval: 5s
       timeout: 2s
       retries: 10
