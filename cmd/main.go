@@ -7,12 +7,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
+	"github.com/elyarsadig/studybud-go/internal/application"
 	"github.com/elyarsadig/studybud-go/migrations"
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
+	"github.com/elyarsadig/studybud-go/pkg/unmarshaller"
 	"github.com/elyarsadig/studybud-go/transport"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -50,6 +53,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	serviceInfo, err := loadServiceAccessControl("./configs/service_info.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ctx := context.Background()
 
 	db, err := initDB(ctx, logger, cfg.Database.Name, cfg.Database.Host, cfg.Database.Port)
@@ -58,7 +66,6 @@ func main() {
 	}
 
 	redisClient := initRedis(cfg)
-	_ = redisClient
 
 	if *migrate {
 		err = migrations.Migrate(db, logger)
@@ -67,8 +74,29 @@ func main() {
 		}
 	}
 
-	router := transport.NewHTTPServer(cfg.HttpAddress)
-	_ = router
+	router := transport.NewHTTPServer(cfg.HttpAddress, logger)
+
+	app, err := application.New(
+		ctx, 
+		router, 
+		errHandler, 
+		cfg, 
+		db, 
+		redisClient, 
+		logger, 
+		serviceInfo, 
+		os.Getenv("SESSION_PRIVATE_KEY"), 
+		24*time.Hour*time.Duration(cfg.ExtraData.SessionExpireDuration),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = app.Run(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func initDB(ctx context.Context, logging logger.Logger, dbName, dbHost, dbPort string) (*gorm.DB, error) {
@@ -131,4 +159,14 @@ func initLogging(cfg *confighandler.Config[configs.ExtraData]) (logger.Logger, e
 		return nil, err
 	}
 	return logger, nil
+}
+
+func loadServiceAccessControl(servicePermissionPath string) (*configs.ServiceInfo, error) {
+	cfg := new(configs.ServiceInfo)
+	unmarshal, err := unmarshaller.NewUnmarshaller(servicePermissionPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, unmarshal.Unmarshal(cfg)
 }
