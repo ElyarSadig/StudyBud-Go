@@ -1,10 +1,10 @@
 development: true
-from_env_file: false
+from_env_file: true
 test_mode: true
 http_address: "0.0.0.0:8080"
 database:
-  name: "studybud-service"
-  host: "dbHost"
+  name: "studybud_db"
+  host: "localhost"
   port: "5432"
 redis:
   dial_retry: 12

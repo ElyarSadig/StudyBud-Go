@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/elyarsadig/studybud-go/pkg/logger"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -24,13 +25,13 @@ type HttpServer struct {
 	httpAddress     string
 }
 
-func NewHTTPServer(httpAddress string) HTTPTransporter {
+func NewHTTPServer(httpAddress string, logging logger.Logger) HTTPTransporter {
 	newServer := new(HttpServer)
 	router := chi.NewRouter()
 
 	httpServer := new(http.Server)
 	httpServer.Addr = httpAddress
-	httpServer.Handler = router
+	httpServer.Handler = PanicRecoverer(router, logging)
 	httpServer.WriteTimeout = _defaultWriteTimeout
 	httpServer.ReadTimeout = _defaultReadTimeout
 	httpServer.ReadHeaderTimeout = _defaultReadHeaderTimeout
@@ -68,4 +69,16 @@ func (s *HttpServer) AddHandler(httpMethod HttpMethod, path string, f func(w htt
 	case PUT:
 		s.router.Put(path, f)
 	}
+}
+
+func PanicRecoverer(h http.Handler, logging logger.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if r := recover(); r != nil {
+				logging.Error("panic occured", "panic", r)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		}()
+		h.ServeHTTP(w, r)
+	})
 }
