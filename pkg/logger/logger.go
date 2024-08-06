@@ -37,8 +37,8 @@ type Logger interface {
 	InfoContext(ctx context.Context, msg string, args ...any)
 	Warn(msg string, args ...any)
 	WarnContext(ctx context.Context, msg string, args ...any)
-	Error(err error, msg string)
-	ErrorContext(ctx context.Context, msg string, err error)
+	Error(msg string, args ...any)
+	ErrorContext(ctx context.Context, msg string, args ...any)
 	Fatal(msg string, args ...any)
 	FatalContext(ctx context.Context, msg string, args ...any)
 }
@@ -115,12 +115,12 @@ func (l *ZerologLogger) WarnContext(ctx context.Context, msg string, args ...any
 	l.logger.Warn().Ctx(ctx).Fields(args).Msg(msg)
 }
 
-func (l *ZerologLogger) Error(err error, msg string) {
-	l.logger.Err(err).Msg(msg)
+func (l *ZerologLogger) Error(msg string, args ...any) {
+	l.logger.Error().Fields(args).Msg(msg)
 }
 
-func (l *ZerologLogger) ErrorContext(ctx context.Context, msg string, err error) {
-	l.logger.Err(err).Ctx(ctx).Msg(msg)
+func (l *ZerologLogger) ErrorContext(ctx context.Context, msg string, args ...any) {
+	l.logger.Error().Fields(args).Msg(msg)
 }
 
 func (l *ZerologLogger) Fatal(msg string, args ...any) {
