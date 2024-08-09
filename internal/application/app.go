@@ -122,6 +122,7 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	if a.serviceConfig.ExtraData.HealthCheck {
 		a.httpServer.AddHandler("get", api("health"), a.healthCheck.HandlerFunc)
 	}
+	a.httpServer.ServeStaticFiles("web/static")
 }
 
 func api(path string) string {
