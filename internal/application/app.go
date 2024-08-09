@@ -14,9 +14,9 @@ import (
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
+	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
 	"github.com/elyarsadig/studybud-go/transport"
 	"github.com/hellofresh/health-go/v5"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,7 @@ const ApiVersion = "/apis/v1"
 type Application struct {
 	httpServer        transport.HTTPTransporter
 	db                *gorm.DB
-	redis             *redis.Client
+	redis             *redispkg.Redis
 	logger            logger.Logger
 	error             errorHandler.Handler
 	serviceConfig     *confighandler.Config[configs.ExtraData]
@@ -46,7 +46,7 @@ func New(
 	errorHandler errorHandler.Handler,
 	serviceConfig *confighandler.Config[configs.ExtraData],
 	db *gorm.DB,
-	redis *redis.Client,
+	redis *redispkg.Redis,
 	logger logger.Logger,
 	serviceInfo *configs.ServiceInfo,
 	sessionPrivateKey string,

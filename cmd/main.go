@@ -15,6 +15,7 @@ import (
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
+	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
 	"github.com/elyarsadig/studybud-go/pkg/unmarshaller"
 	"github.com/elyarsadig/studybud-go/transport"
 	"github.com/joho/godotenv"
@@ -46,7 +47,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = errHandler
 
 	logger, err := initLogging(cfg)
 	if err != nil {
@@ -138,7 +138,7 @@ func loadEnvVar(fileMode bool) error {
 	return nil
 }
 
-func initRedis(cfg *confighandler.Config[configs.ExtraData]) *redis.Client {
+func initRedis(cfg *confighandler.Config[configs.ExtraData]) *redispkg.Redis {
 	password := os.Getenv("REDIS_PASSWORD")
 	client := redis.NewClient(&redis.Options{
 		Addr:         fmt.Sprintf("%s:%s", cfg.Redis.Address, cfg.Redis.Port),
@@ -149,8 +149,8 @@ func initRedis(cfg *confighandler.Config[configs.ExtraData]) *redis.Client {
 		PoolSize:     cfg.Redis.PoolSize,
 		MinIdleConns: cfg.Redis.MinIdleConns,
 	})
-
-	return client
+	redistClient := redispkg.NewRedis(client)
+	return &redistClient
 }
 
 func initLogging(cfg *confighandler.Config[configs.ExtraData]) (logger.Logger, error) {
