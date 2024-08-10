@@ -8,8 +8,8 @@ type User struct {
     LastLogin   time.Time `gorm:"type:timestamp with time zone"`
     IsSuperuser bool      `gorm:"type:boolean;not null"`
     Username    string    `gorm:"type:varchar(150);not null;unique"`
-    FirstName   string    `gorm:"type:varchar(150);not null"`
-    LastName    string    `gorm:"type:varchar(150);not null"`
+    FirstName   string    `gorm:"type:varchar(150)"`
+    LastName    string    `gorm:"type:varchar(150)"`
     Email       string    `gorm:"type:varchar(254);unique"`
     IsStaff     bool      `gorm:"type:boolean;not null"`
     IsActive    bool      `gorm:"type:boolean;not null"`

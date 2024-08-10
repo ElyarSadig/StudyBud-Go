@@ -123,6 +123,8 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 		a.httpServer.AddHandler("get", api("health"), a.healthCheck.HandlerFunc)
 	}
 	a.httpServer.ServeStaticFiles("web/static")
+	a.httpServer.AddHandler("get", "/login", apiHandler.Login)
+	a.httpServer.AddHandler("get", "/register", apiHandler.Register)
 }
 
 func api(path string) string {
