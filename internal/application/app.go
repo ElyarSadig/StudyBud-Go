@@ -12,6 +12,7 @@ import (
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/delivery"
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
+	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
 	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
@@ -38,6 +39,7 @@ type Application struct {
 	serviceInfo       *configs.ServiceInfo
 	sessionPrivateKey string
 	sessionExpiration time.Duration
+	aes               *encryption.AES[string]
 }
 
 func New(
@@ -49,7 +51,7 @@ func New(
 	redis *redispkg.Redis,
 	logger logger.Logger,
 	serviceInfo *configs.ServiceInfo,
-	sessionPrivateKey string,
+	aes *encryption.AES[string],
 	sessionExpiration time.Duration,
 ) (Bootstrapper, error) {
 	app := new(Application)
@@ -58,6 +60,7 @@ func New(
 		return nil, errors.New("service config is nil")
 	}
 
+	app.aes = aes
 	app.db = db
 	app.redis = redis
 	app.logger = logger
@@ -65,7 +68,6 @@ func New(
 	app.httpServer = httpServer
 	app.serviceConfig = serviceConfig
 	app.serviceInfo = serviceInfo
-	app.sessionPrivateKey = sessionPrivateKey
 	app.sessionExpiration = sessionExpiration
 	app.healthCheck = healthChecker(serviceInfo.ServiceName, serviceInfo.ServiceVersion, serviceInfo.ServiceCode)
 
@@ -112,7 +114,10 @@ func (a *Application) Shutdown(ctx context.Context) error {
 }
 
 func (a *Application) registerServiceLayers(ctx context.Context) error {
-	apiHandler := delivery.NewApiHandler(ctx, a.error, nil)
+	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, nil)
+	if err != nil {
+		return err
+	}
 	a.registerAPIHandler(apiHandler)
 
 	return nil
@@ -123,8 +128,9 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 		a.httpServer.AddHandler("get", api("health"), a.healthCheck.HandlerFunc)
 	}
 	a.httpServer.ServeStaticFiles("web/static")
-	a.httpServer.AddHandler("get", "/login", apiHandler.Login)
-	a.httpServer.AddHandler("get", "/register", apiHandler.Register)
+	a.httpServer.AddHandler("get", "/login", apiHandler.LoginPage)
+	a.httpServer.AddHandler("get", "/register", apiHandler.RegisterPage)
+	a.httpServer.AddHandler("post", "/register", apiHandler.RegisterUser)
 }
 
 func api(path string) string {
@@ -133,11 +139,9 @@ func api(path string) string {
 }
 
 func healthChecker(name, version, code string) *health.Health {
-
 	h, _ := health.New(health.WithComponent(health.Component{
 		Name:    fmt.Sprintf("%s - service code: %s", name, code),
 		Version: version,
 	}))
-
 	return h
 }
