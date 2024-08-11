@@ -1,5 +1,9 @@
 package configs
 
+type CtxKey string
+
+const UserName CtxKey = "username"
+
 const (
 	USERS_DB_NAME                  = "users"
 	USER_PERMISSIONS_DB_NAME       = "user_permissions"

@@ -13,6 +13,7 @@ import (
 	"github.com/elyarsadig/studybud-go/internal/application"
 	"github.com/elyarsadig/studybud-go/migrations"
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
+	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
 	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
@@ -76,16 +77,21 @@ func main() {
 
 	router := transport.NewHTTPServer(cfg.HttpAddress, logger)
 
+	aes, err := encryption.NewAES[string]([]byte(os.Getenv("SESSION_PRIVATE_KEY")))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app, err := application.New(
-		ctx, 
-		router, 
-		errHandler, 
-		cfg, 
-		db, 
-		redisClient, 
-		logger, 
-		serviceInfo, 
-		os.Getenv("SESSION_PRIVATE_KEY"), 
+		ctx,
+		router,
+		errHandler,
+		cfg,
+		db,
+		redisClient,
+		logger,
+		serviceInfo,
+		aes,
 		24*time.Hour*time.Duration(cfg.ExtraData.SessionExpireDuration),
 	)
 
