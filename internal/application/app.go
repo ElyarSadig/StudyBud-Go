@@ -11,6 +11,8 @@ import (
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/delivery"
+	"github.com/elyarsadig/studybud-go/internal/repository"
+	"github.com/elyarsadig/studybud-go/internal/usecase"
 	confighandler "github.com/elyarsadig/studybud-go/pkg/configHandler"
 	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
@@ -114,7 +116,10 @@ func (a *Application) Shutdown(ctx context.Context) error {
 }
 
 func (a *Application) registerServiceLayers(ctx context.Context) error {
-	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, nil)
+	userRepo := repository.NewUser(a.db, a.error, a.logger)
+
+	userUseCase := usecase.NewUser(a.error, a.redis, a.logger, userRepo)
+	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, userUseCase)
 	if err != nil {
 		return err
 	}
