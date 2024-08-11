@@ -5,13 +5,11 @@ import (
 )
 
 func (h *ApiHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	data := &BaseTemplateData{}
-	h.renderTemplate(w, "login.html", data)
+	h.renderTemplate(w, "login.html", &BaseTemplateData{})
 }
 
 func (h *ApiHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
-	data := &BaseTemplateData{}
-	h.renderTemplate(w, "register.html", data)
+	h.renderTemplate(w, "register.html", &BaseTemplateData{})
 }
 
 func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {

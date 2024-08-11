@@ -33,16 +33,16 @@ func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redi
 		redis:      redis,
 	}
 
-	// for _, useCase := range useCases {
-	// 	switch useCase.(type) {
-	// 	case domain.UserUseCase:
-	// 		handler.useCases[configs.USER_DB_NAME] = useCase
-	// 	}
-	// }
+	for _, useCase := range useCases {
+		switch useCase.(type) {
+		case domain.UserUseCase:
+			handler.useCases[configs.USERS_DB_NAME] = useCase
+		}
+	}
 	return handler, nil
 }
 
-func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data *BaseTemplateData) error {
+func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data *BaseTemplateData) {
 	tmplPaths := []string{
 		filepath.Join("web", "main.html"),
 		filepath.Join("web", "navbar.html"),
@@ -51,14 +51,15 @@ func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data *Ba
 
 	tmplParsed, err := template.ParseFiles(tmplPaths...)
 	if err != nil {
-		return err
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	err = tmplParsed.ExecuteTemplate(w, "base", data)
 	if err != nil {
-		return err
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	return nil
 }
 
 func (h *ApiHandler) ProtectedHandler(next http.HandlerFunc) http.HandlerFunc {
