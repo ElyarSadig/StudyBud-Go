@@ -155,3 +155,42 @@ func TestValidatePassword(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateEmail(t *testing.T) {
+	testCases := []struct {
+		email                string
+		expectedValid        bool
+		expectedErrorMessage string
+		desc                 string
+	}{
+		{
+			email:                "eL@cg",
+			expectedValid:        false,
+			expectedErrorMessage: "invalid email format",
+			desc:                 "invalid email",
+		},
+		{
+			email:                "Elyar@",
+			expectedValid:        false,
+			expectedErrorMessage: "invalid email format",
+			desc:                 "invalid email",
+		},
+		{
+			email:                "elyar@email.com",
+			expectedValid:        true,
+			expectedErrorMessage: "",
+			desc:                 "valid email",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			valid, message := ValidateEmail(tC.email)
+			if valid != tC.expectedValid {
+				t.Errorf("Expected isValid for email %s to be %t, but got %t", tC.email, tC.expectedValid, valid)
+			}
+			if message != tC.expectedErrorMessage {
+				t.Errorf("Expected error message to be %s, but got %s", tC.expectedErrorMessage, message)
+			}
+		})
+	}
+}

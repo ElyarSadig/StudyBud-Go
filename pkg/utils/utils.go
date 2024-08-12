@@ -71,3 +71,12 @@ func ValidatePassword(password string) (bool, string) {
 
 	return true, ""
 }
+
+func ValidateEmail(email string) (bool, string) {
+	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	re := regexp.MustCompile(emailRegex)
+	if !re.MatchString(email) {
+		return false, "invalid email format"
+	}
+	return true, ""
+}
