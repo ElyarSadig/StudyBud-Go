@@ -37,12 +37,14 @@ func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redi
 		switch useCase.(type) {
 		case domain.UserUseCase:
 			handler.useCases[configs.USERS_DB_NAME] = useCase
+		case domain.TopicUseCase:
+			handler.useCases[configs.TOPICS_DB_NAME] = useCase
 		}
 	}
 	return handler, nil
 }
 
-func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data *BaseTemplateData) {
+func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 	tmplPaths := []string{
 		filepath.Join("web", "main.html"),
 		filepath.Join("web", "navbar.html"),

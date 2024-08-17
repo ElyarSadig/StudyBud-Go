@@ -26,12 +26,10 @@ func NewUser(db *gorm.DB, errHandler errorHandler.Handler, logger logger.Logger)
 
 func (r *UserRepository) None() {}
 
-
-
 func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.User, error) {
 	var tempUser domain.User
 	r.db.Where("username = ?", obj.Username).Find(&tempUser)
-	if tempUser.Username != ""  {
+	if tempUser.Username != "" {
 		return domain.User{}, r.errHandler.New(http.StatusConflict, "username already in use")
 	}
 	r.db.Where("email = ?", obj.Email).Find(&tempUser)

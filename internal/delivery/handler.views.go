@@ -8,16 +8,16 @@ import (
 )
 
 func (h *ApiHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	h.renderTemplate(w, "login.html", &BaseTemplateData{})
+	h.renderTemplate(w, "login.html", BaseTemplateData{})
 }
 
 func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
-	data := &BaseTemplateData{}
+	data := BaseTemplateData{}
 	ctx := r.Context()
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	form := &domain.UserLoginForm{
-		Email: email,
+		Email:    email,
 		Password: password,
 	}
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
@@ -32,11 +32,11 @@ func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
-	h.renderTemplate(w, "register.html", &BaseTemplateData{})
+	h.renderTemplate(w, "register.html", BaseTemplateData{})
 }
 
 func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	data := &BaseTemplateData{}
+	data := BaseTemplateData{}
 	ctx := r.Context()
 	name := r.FormValue("name")
 	userName := r.FormValue("username")
@@ -58,5 +58,34 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.setCookie(w, sessionKey)
-	
+}
+
+func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
+	data := BaseTemplateData{}
+	ctx := r.Context()
+	useCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
+	queryParams := r.URL.Query()
+	name := queryParams.Get("q")
+	var topics domain.Topics
+	var err error
+	if len(name) == 0 {
+		topics, err = useCase.ListAllTopics(ctx)
+		if err != nil {
+			data.Messages = append(data.Messages, err.Error())
+			h.renderTemplate(w, "topics.html", data)
+			return
+		}
+	} else {
+		topics, err = useCase.SearchTopicByName(ctx, name)
+		if err != nil {
+			data.Messages = append(data.Messages, err.Error())
+			h.renderTemplate(w, "topics.html", data)
+			return
+		}
+	}
+	tmplData := Topics{
+		BaseTemplateData: data,
+		Topics:           topics,
+	}
+	h.renderTemplate(w, "topics.html", tmplData)
 }
