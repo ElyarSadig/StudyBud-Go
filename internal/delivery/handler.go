@@ -11,7 +11,7 @@ import (
 	"github.com/elyarsadig/studybud-go/internal/domain"
 	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
-	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
+	redispkg "github.com/elyarsadig/studybud-go/pkg/redis"
 	"github.com/elyarsadig/studybud-go/transport"
 )
 

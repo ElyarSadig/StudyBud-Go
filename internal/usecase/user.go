@@ -9,7 +9,7 @@ import (
 	"github.com/elyarsadig/studybud-go/pkg/bcrypt"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
-	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
+	redispkg "github.com/elyarsadig/studybud-go/pkg/redis"
 )
 
 type UserUseCase struct {

@@ -16,7 +16,7 @@ import (
 	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
-	redispkg "github.com/elyarsadig/studybud-go/pkg/redisPkg"
+	redispkg "github.com/elyarsadig/studybud-go/pkg/redis"
 	"github.com/elyarsadig/studybud-go/pkg/unmarshaller"
 	"github.com/elyarsadig/studybud-go/transport"
 	"github.com/joho/godotenv"
