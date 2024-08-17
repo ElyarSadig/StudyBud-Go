@@ -117,9 +117,11 @@ func (a *Application) Shutdown(ctx context.Context) error {
 
 func (a *Application) registerServiceLayers(ctx context.Context) error {
 	userRepo := repository.NewUser(a.db, a.error, a.logger)
+	topicRepo := repository.NewTopic(a.db, a.error, a.logger)
 
 	userUseCase := usecase.NewUser(a.error, a.redis, a.logger, userRepo)
-	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, userUseCase)
+	topicUseCase := usecase.NewTopic(a.error, a.logger, topicRepo)
+	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, userUseCase, topicUseCase)
 	if err != nil {
 		return err
 	}
@@ -137,6 +139,7 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("post", "/login", apiHandler.LoginUser)
 	a.httpServer.AddHandler("get", "/register", apiHandler.RegisterPage)
 	a.httpServer.AddHandler("post", "/register", apiHandler.RegisterUser)
+	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)
 }
 
 func api(path string) string {
