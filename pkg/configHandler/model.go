@@ -52,7 +52,6 @@ type Database struct {
 	Password string `yaml:"password" json:"password"`
 }
 
-
 type CircuitBreaker struct {
 	ErrorThreshold   int           `yaml:"error_threshold" json:"error_threshold"`
 	SuccessThreshold int           `yaml:"success_threshold" json:"success_threshold"`

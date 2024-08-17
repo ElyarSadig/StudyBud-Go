@@ -96,8 +96,8 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	result, _ := h.aes.Encrypt(key)
 	token := base64.URLEncoding.EncodeToString(result)
 	cookie := &http.Cookie{
-		Name: "session_token",
-		Value: token,
+		Name:   "session_token",
+		Value:  token,
 		MaxAge: 3600,
 		Secure: true,
 	}
