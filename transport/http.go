@@ -81,7 +81,7 @@ func PanicRecoverer(h http.Handler, logging logger.Logger) http.Handler {
 		defer func() {
 			if r := recover(); r != nil {
 				logging.Error("panic occured", "panic", r)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				w.WriteHeader(http.StatusInternalServerError)
 			}
 		}()
 		h.ServeHTTP(w, r)
