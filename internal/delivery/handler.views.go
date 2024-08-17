@@ -11,6 +11,26 @@ func (h *ApiHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "login.html", &BaseTemplateData{})
 }
 
+func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	data := &BaseTemplateData{}
+	ctx := r.Context()
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	form := &domain.UserLoginForm{
+		Email: email,
+		Password: password,
+	}
+	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
+	sessionKey, err := useCase.Login(ctx, form)
+	if err != nil {
+		data.Messages = append(data.Messages, err.Error())
+		h.renderTemplate(w, "login.html", data)
+		return
+	}
+	h.setCookie(w, sessionKey)
+	http.Redirect(w, r, "/home", http.StatusFound)
+}
+
 func (h *ApiHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "register.html", &BaseTemplateData{})
 }
