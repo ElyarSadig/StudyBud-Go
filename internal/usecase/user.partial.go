@@ -1,7 +1,12 @@
 package usecase
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"math/rand"
 
@@ -33,11 +38,22 @@ func (u *UserUseCase) validateUserRegisterForm(form *domain.UserRegisterForm) er
 }
 
 func (u *UserUseCase) generateDigitString(length int) string {
-	digits := make([]byte, length)
-	var num byte
+	result := strings.Builder{}
+	result.Grow(length)
 	for i := 0; i < length; i++ {
-		num = byte(rand.Intn(10))
-		digits[i] = num
+		num := rand.Intn(10)
+		result.WriteString(strconv.Itoa(num))
 	}
-	return string(digits)
+	return result.String()
+}
+
+func (u *UserUseCase) setSession(ctx context.Context, username string) (string, error) {
+	key := u.generateDigitString(6)
+	err := u.redis.Set(ctx, "session", time.Hour*1, key, username)
+	if err != nil {
+		u.logger.Error(err.Error())
+		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	u.logger.Info("session set in redis", "key", key, "username", username)
+	return key, nil
 }

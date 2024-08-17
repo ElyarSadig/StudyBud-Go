@@ -42,3 +42,8 @@ type UserRegisterForm struct {
 	Password1 string
 	Password2 string
 }
+
+type UserLoginForm struct {
+	Email    string
+	Password string
+}

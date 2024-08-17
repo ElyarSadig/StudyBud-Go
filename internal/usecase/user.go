@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
@@ -61,11 +60,18 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 	if err != nil {
 		return "", err
 	}
-	key := u.generateDigitString(6)
-	err = u.redis.Set(ctx, "session", time.Hour*1, key, user.Username)
+	return u.setSession(ctx, user.Username)
+}
+
+func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (string, error) {
+	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
+	user, err := repo.FindUserByEmail(ctx, form.Email)
 	if err != nil {
-		u.logger.Error(err.Error())
-		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong")
+		return "", err
 	}
-	return key, nil
+	ok := bcrypt.CheckPasswordHash(form.Password, user.Password)
+	if !ok {
+		return "", u.errHandler.New(http.StatusBadRequest, "invalid credentials try again!")
+	}
+	return u.setSession(ctx, user.Username)
 }
