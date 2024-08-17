@@ -1,0 +1,30 @@
+<div class="topics">
+  <div class="topics__header">
+    <h2>Browse Topics</h2>
+  </div>
+  <ul class="topics__list">
+    <li>
+      <a href="/home" class="active">All <span>{{ .TopicCount }}</span></a>
+    </li>
+    {{ range .TopicList }}
+    <li>
+      <a href="/home?q={{ .Name }}"
+        >{{ .Name }}<span>{{ .RoomCount }}</span></a
+      >
+    </li>
+    {{ end }}
+  </ul>
+  <a class="btn btn--link" href="/topics">
+    More
+    <svg
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
+    >
+      <title>chevron-down</title>
+      <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+    </svg>
+  </a>
+</div>
