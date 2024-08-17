@@ -12,3 +12,6 @@ build:
 
 down:
 	docker-compose down
+
+seed:
+	go run ./cmd -c ./configs/config-local.yaml -migrate -seed

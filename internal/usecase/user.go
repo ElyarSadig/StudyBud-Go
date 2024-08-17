@@ -55,6 +55,7 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 		Username: form.Username,
 		Email:    form.Email,
 		Password: hashedPassword,
+		IsActive: true,
 	}
 	_, err = repo.Create(ctx, &user)
 	if err != nil {

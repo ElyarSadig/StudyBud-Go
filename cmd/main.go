@@ -28,6 +28,7 @@ import (
 func main() {
 	configFile := flag.String("c", "", "Path to config file")
 	migrate := flag.Bool("migrate", false, "Run DB migrations")
+	seed := flag.Bool("seed", false, "seed DB")
 	flag.Parse()
 
 	if *configFile == "" {
@@ -73,6 +74,15 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	if *seed {
+		err := migrations.Seed(db)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Successfully seeded the database")
+		return
 	}
 
 	router := transport.NewHTTPServer(cfg.HttpAddress, logger)
