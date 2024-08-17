@@ -28,7 +28,7 @@ func NewAES[T any](key []byte) (*AES[T], error) {
 	}
 	return &AES[T]{
 		block: block,
-		gcm: gcm,
+		gcm:   gcm,
 	}, nil
 }
 
