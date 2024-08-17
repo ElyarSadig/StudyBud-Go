@@ -1,32 +1,33 @@
 package utils
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 	"unicode"
 )
 
-func ValidateName(name string) (bool, string) {
+func ValidateName(name string) error {
 	if len(name) < 2 {
-		return false, "name must be at least 2 characters long"
+		return errors.New("name must be at least 2 characters long")
 	}
 	if !regexp.MustCompile(`^[a-zA-Z\s]+$`).MatchString(name) {
-		return false, "name can only contain letters and spaces"
+		return errors.New("name can only contain letters and spaces")
 	}
-	return true, ""
+	return nil
 }
 
-func ValidateUsername(username string) (bool, string) {
+func ValidateUsername(username string) error {
 	if len(username) < 3 {
-		return false, "username must be at least 3 characters long"
+		return errors.New("username must be at least 3 characters long")
 	}
 	if !regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_.]*$`).MatchString(username) {
-		return false, "username can only contain letters, digits, underscores, and dots, and must start with a letter"
+		return errors.New("username can only contain letters, digits, underscores, and dots, and must start with a letter")
 	}
-	return true, ""
+	return nil
 }
 
-func ValidatePassword(password string) (bool, string) {
+func ValidatePassword(password string) error {
 	var (
 		hasMinLen    = false
 		hasUpper     = false
@@ -54,29 +55,29 @@ func ValidatePassword(password string) (bool, string) {
 	}
 
 	if !hasMinLen {
-		return false, "password must be at least 8 characters long"
+		return errors.New("password must be at least 8 characters long")
 	}
 	if !hasUpper {
-		return false, "password must contain at least one uppercase letter"
+		return errors.New("password must contain at least one uppercase letter")
 	}
 	if !hasLower {
-		return false, "password must contain at least one lowercase letter"
+		return errors.New("password must contain at least one lowercase letter")
 	}
 	if !hasDigit {
-		return false, "password must contain at least one digit"
+		return errors.New("password must contain at least one digit")
 	}
 	if !hasSpecial {
-		return false, "password must contain at least one special character"
+		return errors.New("password must contain at least one special character")
 	}
 
-	return true, ""
+	return nil
 }
 
-func ValidateEmail(email string) (bool, string) {
+func ValidateEmail(email string) error {
 	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	re := regexp.MustCompile(emailRegex)
 	if !re.MatchString(email) {
-		return false, "invalid email format"
+		return errors.New("invalid email format")
 	}
-	return true, ""
+	return nil
 }

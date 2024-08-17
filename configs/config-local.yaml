@@ -10,7 +10,7 @@ redis:
   dial_retry: 12
   max_conn: 10
   idle_conn: 5
-  address: "redisHost"
+  address: "localhost"
   port: "6379"
   db: 0
   max_retries: 0

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/elyarsadig/studybud-go/internal/domain"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
@@ -26,5 +27,11 @@ func NewUser(db *gorm.DB, errHandler errorHandler.Handler, logger logger.Logger)
 func (r *UserRepository) None() {}
 
 func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.User, error) {
-	panic("Not Implemented")
+	result := r.db.Create(obj)
+	err := result.Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.User{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return *obj, nil
 }
