@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Message struct {
 	ID      uint      `gorm:"primaryKey"`
@@ -11,4 +13,9 @@ type Message struct {
 	UserID  uint      `gorm:"not null;index:idx_message_user_id"`
 	Room    Room      `gorm:"foreignKey:RoomID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
 	User    User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+}
+
+type Messages struct {
+	List  []Message
+	Count int64
 }

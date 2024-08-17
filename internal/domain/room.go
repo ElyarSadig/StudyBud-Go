@@ -21,3 +21,14 @@ type RoomParticipant struct {
 	Room   Room `gorm:"foreignKey:RoomID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
 	User   User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
 }
+
+type RoomWithDetails struct {
+	Room
+	ParticipantsCount int64
+	Since             time.Duration
+}
+
+type Rooms struct {
+	List  []RoomWithDetails
+	Count int64
+}
