@@ -25,7 +25,7 @@ type RoomParticipant struct {
 type RoomWithDetails struct {
 	Room
 	ParticipantsCount int64
-	Since             time.Duration
+	Since             string
 }
 
 type Rooms struct {

@@ -89,3 +89,36 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 	}
 	h.renderTemplate(w, "topics.html", tmplData)
 }
+
+func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
+	data := HomeTemplateData{}
+	ctx := r.Context()
+	topicUseCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
+	roomUseCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	messageUseCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	topics, err := topicUseCase.ListAllTopics(ctx)
+	if err != nil {
+		data.Messages = append(data.Messages, err.Error())
+		h.renderTemplate(w, "home.html", data)
+		return
+	}
+	data.TopicList = topics.List[0:5]
+	data.TopicsCount = topics.Count
+	rooms, err := roomUseCase.ListAllRooms(ctx)
+	if err != nil {
+		data.Messages = append(data.Messages, err.Error())
+		h.renderTemplate(w, "home.html", data)
+		return
+	}
+	data.RoomCount = rooms.Count
+	data.RoomList = rooms.List
+	messages, err := messageUseCase.ListAllMessages(ctx)
+	if err != nil {
+		data.Messages = append(data.Messages, err.Error())
+		h.renderTemplate(w, "home.html", data)
+		return
+	}
+	data.MessageList = messages.MessageList
+	// data.RequestUser.Username = h.extractUserNameFromCookie(r)
+	h.renderTemplate(w, "home.html", data)
+}

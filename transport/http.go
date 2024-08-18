@@ -32,7 +32,7 @@ func NewHTTPServer(httpAddress string, logging logger.Logger) HTTPTransporter {
 
 	httpServer := new(http.Server)
 	httpServer.Addr = httpAddress
-	httpServer.Handler = PanicRecoverer(router, logging)
+	httpServer.Handler = router
 	httpServer.WriteTimeout = _defaultWriteTimeout
 	httpServer.ReadTimeout = _defaultReadTimeout
 	httpServer.ReadHeaderTimeout = _defaultReadHeaderTimeout
@@ -76,14 +76,14 @@ func (s *HttpServer) ServeStaticFiles(webDir string) {
 	s.router.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(webDir))))
 }
 
-func PanicRecoverer(h http.Handler, logging logger.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if r := recover(); r != nil {
-				logging.Error("panic occured", "panic", r)
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}()
-		h.ServeHTTP(w, r)
-	})
-}
+// func PanicRecoverer(h http.Handler, logging logger.Logger) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		defer func() {
+// 			if r := recover(); r != nil {
+// 				logging.Error("panic occured", "panic", r)
+// 				w.WriteHeader(http.StatusInternalServerError)
+// 			}
+// 		}()
+// 		h.ServeHTTP(w, r)
+// 	})
+// }

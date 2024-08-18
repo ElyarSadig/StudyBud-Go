@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
 
@@ -39,6 +40,10 @@ func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redi
 			handler.useCases[configs.USERS_DB_NAME] = useCase
 		case domain.TopicUseCase:
 			handler.useCases[configs.TOPICS_DB_NAME] = useCase
+		case domain.RoomUseCase:
+			handler.useCases[configs.ROOMS_DB_NAME] = useCase
+		case domain.MessageUseCase:
+			handler.useCases[configs.MESSAGES_DB_NAME] = useCase
 		}
 	}
 	return handler, nil
@@ -48,18 +53,21 @@ func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any
 	tmplPaths := []string{
 		filepath.Join("web", "main.html"),
 		filepath.Join("web", "navbar.html"),
+		filepath.Join("web", "activity_component.html"),
+		filepath.Join("web", "feed_component.html"),
+		filepath.Join("web", "topics_component.html"),
 		filepath.Join("web", tmpl),
 	}
 
 	tmplParsed, err := template.ParseFiles(tmplPaths...)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
 		return
 	}
 
 	err = tmplParsed.ExecuteTemplate(w, "base", data)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
 		return
 	}
 }
@@ -102,4 +110,14 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 		Secure: true,
 	}
 	http.SetCookie(w, cookie)
+}
+
+func (h *ApiHandler) extractUserNameFromCookie(r *http.Request) string {
+	ctx := r.Context()
+	cookie, _ := r.Cookie("session_token")
+	token := cookie.Value
+	encryptedToken, _ := base64.URLEncoding.DecodeString(token)
+	key, _ := h.aes.Decrypt(encryptedToken)
+	_, userName := h.redis.Inspect(ctx, "session", key)
+	return userName
 }

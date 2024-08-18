@@ -7,11 +7,11 @@
     <div class="activities__boxHeader roomListRoom__header">
       <a href="/profile/{{ .User.ID }}" class="roomListRoom__author">
         <div class="avatar avatar--small">
-          <img src="{{ .User.Avatar.Url }}" />
+          <img src="{{ .User.Avatar }}" />
         </div>
         <p>
           @{{ .User.Username }}
-          <span>{{ .CreatedSince }} ago</span>
+          
         </p>
       </a>
       {{ if eq .RequestUser.Username .User.Username }}
@@ -36,7 +36,7 @@
     <div class="activities__boxContent">
       <p>
         replied to post “<a href="/room/{{ .Room.ID }}"
-          >{{ .Room }}</a
+          >{{ .Room.Name }}</a
         >”
       </p>
       <div class="activities__boxRoomContent">{{ .Body }}</div>
