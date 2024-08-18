@@ -91,8 +91,14 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
-	data := HomeTemplateData{}
-	data.RequestUser.Username = h.extractUserNameFromCookie(r)
+	sessionValue, ok := h.extractSessionFromCookie(r)
+	data := HomeTemplateData{
+		BaseTemplateData: BaseTemplateData{
+			Username:        sessionValue.Username,
+			IsAuthenticated: ok,
+			AvatarURL:       sessionValue.Avatar,
+		},
+	}
 	ctx := r.Context()
 	topicUseCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
 	roomUseCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)

@@ -35,6 +35,13 @@ type UserPermission struct {
 	Permission   AuthPermission `gorm:"foreignKey:PermissionID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
 }
 
+type SessionValue struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Avatar   string `json:"avatar"`
+}
+
 type UserRegisterForm struct {
 	Name      string
 	Username  string

@@ -3,6 +3,7 @@ package delivery
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"path/filepath"
@@ -114,23 +115,30 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	http.SetCookie(w, cookie)
 }
 
-func (h *ApiHandler) extractUserNameFromCookie(r *http.Request) string {
+func (h *ApiHandler) extractSessionFromCookie(r *http.Request) (domain.SessionValue, bool) {
 	ctx := r.Context()
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		h.logger.Debug(err.Error())
-		return ""
+		return domain.SessionValue{}, false
 	}
 	token := cookie.Value
 	encryptedToken, err := base64.URLEncoding.DecodeString(token)
 	if err != nil {
 		h.logger.Error(err.Error())
-		return ""
+		return domain.SessionValue{}, false
 	}
 	key, err := h.aes.Decrypt(encryptedToken)
 	if err != nil {
 		h.logger.Error(err.Error())
+		return domain.SessionValue{}, false
 	}
-	_, userName := h.redis.Inspect(ctx, "session", key)
-	return userName
+	_, jsonData := h.redis.Inspect(ctx, "session", key)
+	var sessionValue domain.SessionValue
+	err = json.Unmarshal(jsonData, &sessionValue)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return domain.SessionValue{}, false
+	}
+	return sessionValue, true
 }

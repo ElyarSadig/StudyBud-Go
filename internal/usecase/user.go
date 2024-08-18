@@ -61,7 +61,13 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 	if err != nil {
 		return "", err
 	}
-	return u.setSession(ctx, user.Username)
+	sessionValue := domain.SessionValue{
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Avatar:   user.Avatar,
+	}
+	return u.setSession(ctx, sessionValue)
 }
 
 func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (string, error) {
@@ -74,5 +80,11 @@ func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (st
 	if !ok {
 		return "", u.errHandler.New(http.StatusBadRequest, "invalid credentials try again!")
 	}
-	return u.setSession(ctx, user.Username)
+	sessionValue := domain.SessionValue{
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Avatar:   user.Avatar,
+	}
+	return u.setSession(ctx, sessionValue)
 }
