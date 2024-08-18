@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/elyarsadig/studybud-go/internal/domain"
 	"github.com/elyarsadig/studybud-go/pkg/encryption"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
+	"github.com/elyarsadig/studybud-go/pkg/logger"
 	redispkg "github.com/elyarsadig/studybud-go/pkg/redis"
 	"github.com/elyarsadig/studybud-go/transport"
 )
@@ -19,18 +19,20 @@ import (
 type ApiHandler struct {
 	transport.HttpServer
 	ctx        context.Context
+	logger     logger.Logger
 	useCases   map[string]domain.Bridger
 	errHandler errorHandler.Handler
 	aes        *encryption.AES[string]
 	redis      *redispkg.Redis
 }
 
-func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redispkg.Redis, errHandler errorHandler.Handler, useCases ...domain.Bridger) (*ApiHandler, error) {
+func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redispkg.Redis, errHandler errorHandler.Handler, logger logger.Logger, useCases ...domain.Bridger) (*ApiHandler, error) {
 	handler := &ApiHandler{
 		useCases:   make(map[string]domain.Bridger),
 		ctx:        ctx,
 		errHandler: errHandler,
 		aes:        aes,
+		logger:     logger,
 		redis:      redis,
 	}
 
@@ -61,13 +63,13 @@ func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any
 
 	tmplParsed, err := template.ParseFiles(tmplPaths...)
 	if err != nil {
-		log.Println(err)
+		h.logger.Error(err.Error())
 		return
 	}
 
 	err = tmplParsed.ExecuteTemplate(w, "base", data)
 	if err != nil {
-		log.Println(err)
+		h.logger.Error(err.Error())
 		return
 	}
 }
@@ -114,10 +116,21 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 
 func (h *ApiHandler) extractUserNameFromCookie(r *http.Request) string {
 	ctx := r.Context()
-	cookie, _ := r.Cookie("session_token")
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		h.logger.Debug(err.Error())
+		return ""
+	}
 	token := cookie.Value
-	encryptedToken, _ := base64.URLEncoding.DecodeString(token)
-	key, _ := h.aes.Decrypt(encryptedToken)
+	encryptedToken, err := base64.URLEncoding.DecodeString(token)
+	if err != nil {
+		h.logger.Error(err.Error())
+		return ""
+	}
+	key, err := h.aes.Decrypt(encryptedToken)
+	if err != nil {
+		h.logger.Error(err.Error())
+	}
 	_, userName := h.redis.Inspect(ctx, "session", key)
 	return userName
 }

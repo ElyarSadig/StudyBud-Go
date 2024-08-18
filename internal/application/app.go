@@ -125,7 +125,7 @@ func (a *Application) registerServiceLayers(ctx context.Context) error {
 	topicUseCase := usecase.NewTopic(a.error, a.logger, topicRepo)
 	roomUseCase := usecase.NewRoom(a.error, a.logger, roomRepo)
 	messageUseCase := usecase.NewMessage(a.error, a.logger, messageRepo)
-	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, userUseCase, topicUseCase, roomUseCase, messageUseCase)
+	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, a.logger, userUseCase, topicUseCase, roomUseCase, messageUseCase)
 	if err != nil {
 		return err
 	}

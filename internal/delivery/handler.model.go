@@ -3,7 +3,7 @@ package delivery
 import "github.com/elyarsadig/studybud-go/internal/domain"
 
 type BaseTemplateData struct {
-	Messages        []string
+	Message         string
 	IsAuthenticated bool
 	AvatarURL       string
 	Username        string

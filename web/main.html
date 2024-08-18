@@ -13,11 +13,9 @@
   <body>
     {{ template "navbar.html" . }}
 
-    {{ if .Messages }}
+    {{ if .Message }}
     <ul class="messages">
-        {{ range .Messages }}
-        <li>{{ . }}</li>
-        {{ end }}
+        <li>{{ .Message }}</li>
     </ul>
     {{ end }}
 
