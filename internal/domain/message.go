@@ -16,6 +16,6 @@ type Message struct {
 }
 
 type Messages struct {
-	List  []Message
-	Count int64
+	MessageList []Message
+	Count       int64
 }
