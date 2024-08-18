@@ -23,7 +23,7 @@ func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.Login(ctx, form)
 	if err != nil {
-		data.Messages = append(data.Messages, err.Error())
+		data.Message = err.Error()
 		h.renderTemplate(w, "login.html", data)
 		return
 	}
@@ -53,7 +53,7 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.RegisterUser(ctx, form)
 	if err != nil {
-		data.Messages = append(data.Messages, err.Error())
+		data.Message = err.Error()
 		h.renderTemplate(w, "register.html", data)
 		return
 	}
@@ -71,14 +71,14 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 	if len(name) == 0 {
 		topics, err = useCase.ListAllTopics(ctx)
 		if err != nil {
-			data.Messages = append(data.Messages, err.Error())
+			data.Message = err.Error()
 			h.renderTemplate(w, "topics.html", data)
 			return
 		}
 	} else {
 		topics, err = useCase.SearchTopicByName(ctx, name)
 		if err != nil {
-			data.Messages = append(data.Messages, err.Error())
+			data.Message = err.Error()
 			h.renderTemplate(w, "topics.html", data)
 			return
 		}
@@ -92,21 +92,22 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	data := HomeTemplateData{}
+	data.RequestUser.Username = h.extractUserNameFromCookie(r)
 	ctx := r.Context()
 	topicUseCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
 	roomUseCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
 	messageUseCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	topics, err := topicUseCase.ListAllTopics(ctx)
 	if err != nil {
-		data.Messages = append(data.Messages, err.Error())
+		data.Message = err.Error()
 		h.renderTemplate(w, "home.html", data)
 		return
 	}
-	data.TopicList = topics.List[0:5]
+	data.TopicList = topics.List
 	data.TopicsCount = topics.Count
 	rooms, err := roomUseCase.ListAllRooms(ctx)
 	if err != nil {
-		data.Messages = append(data.Messages, err.Error())
+		data.Message = err.Error()
 		h.renderTemplate(w, "home.html", data)
 		return
 	}
@@ -114,11 +115,10 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	data.RoomList = rooms.List
 	messages, err := messageUseCase.ListAllMessages(ctx)
 	if err != nil {
-		data.Messages = append(data.Messages, err.Error())
+		data.Message = err.Error()
 		h.renderTemplate(w, "home.html", data)
 		return
 	}
 	data.MessageList = messages.MessageList
-	// data.RequestUser.Username = h.extractUserNameFromCookie(r)
 	h.renderTemplate(w, "home.html", data)
 }
