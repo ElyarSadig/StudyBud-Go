@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -47,13 +48,18 @@ func (u *UserUseCase) generateDigitString(length int) string {
 	return result.String()
 }
 
-func (u *UserUseCase) setSession(ctx context.Context, username string) (string, error) {
+func (u *UserUseCase) setSession(ctx context.Context, sessionValue domain.SessionValue) (string, error) {
 	key := u.generateDigitString(6)
-	err := u.redis.Set(ctx, "session", time.Hour*1, key, username)
+	v, err := json.Marshal(sessionValue)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
-	u.logger.Info("session set in redis", "key", key, "username", username)
+	err = u.redis.Set(ctx, "session", time.Minute*15, key, v)
+	if err != nil {
+		u.logger.Error(err.Error())
+		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	u.logger.Info("session set in redis", "key", key, "user", sessionValue)
 	return key, nil
 }

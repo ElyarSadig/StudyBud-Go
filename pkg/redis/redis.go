@@ -18,16 +18,16 @@ func NewRedis(client *redis.Client) Redis {
 	}
 }
 
-func (r *Redis) Inspect(ctx context.Context, prefix string, key string) (bool, string) {
+func (r *Redis) Inspect(ctx context.Context, prefix string, key string) (bool, []byte) {
 	primeKey := createKey(prefix, key)
-	result, err := r.client.Get(ctx, primeKey).Result()
+	result, err := r.client.Get(ctx, primeKey).Bytes()
 	if err != nil {
-		return false, ""
+		return false, nil
 	}
 	return true, result
 }
 
-func (r *Redis) Set(ctx context.Context, prefix string, expiration time.Duration, key string, value string) error {
+func (r *Redis) Set(ctx context.Context, prefix string, expiration time.Duration, key string, value any) error {
 	primeKey := createKey(prefix, key)
 	err := r.client.Set(ctx, primeKey, value, expiration).Err()
 	if err != nil {

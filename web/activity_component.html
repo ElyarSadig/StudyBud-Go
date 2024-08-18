@@ -11,10 +11,9 @@
         </div>
         <p>
           @{{ .User.Username }}
-          
         </p>
       </a>
-      {{ if eq $.RequestUser.Username .User.Username }}
+      {{ if eq $.Username .User.Username }}
       <div class="roomListRoom__actions">
         <a href="/delete-message/{{ .ID }}">
           <svg
