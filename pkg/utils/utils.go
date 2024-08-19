@@ -86,6 +86,14 @@ func ValidateEmail(email string) error {
 
 func FormatDuration(d time.Duration) string {
 	hours := int(d.Hours())
+	days := hours / 24
+	if days > 0 {
+		if days > 1 {
+			return fmt.Sprintf("%d days", days)
+		} else {
+			return fmt.Sprintf("%d day", days)
+		}
+	}
 	minutes := int(d.Minutes()) % 60
 	return fmt.Sprintf("%dh %dm", hours, minutes)
 }
