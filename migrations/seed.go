@@ -30,11 +30,11 @@ func Seed(db *gorm.DB) error {
 func createUsers(db *gorm.DB) error {
 	password, _ := bcrypt.HashPassword("test123")
 	users := []domain.User{
-		{ID: 1, Username: "Elyar 1", Email: "elyar@email.com", Name: "Elyar 1", Bio: "This is some test bio 1", DateJoined: time.Now(), Password: password},
-		{ID: 2, Username: "Elyar 2", Email: "elyar2@email.com", Name: "Elyar 2", Bio: "This is some test bio 2", DateJoined: time.Now(), Password: password},
-		{ID: 3, Username: "JaneDoe", Email: "jane.doe@example.com", Name: "Jane Doe", Bio: "Enthusiastic learner", DateJoined: time.Now(), Password: password},
-		{ID: 4, Username: "JohnSmith", Email: "john.smith@example.com", Name: "John Smith", Bio: "Loves coding", DateJoined: time.Now(), Password: password},
-		{ID: 5, Username: "AliceW", Email: "alice.w@example.com", Name: "Alice W", Bio: "Avid reader", DateJoined: time.Now(), Password: password},
+		{ID: 1, Username: "Elyar 1", Email: "elyar@email.com", Avatar: "/static/images/avatar.svg", Name: "Elyar 1", Bio: "This is some test bio 1", DateJoined: time.Now(), Password: password},
+		{ID: 2, Username: "Elyar 2", Email: "elyar2@email.com", Avatar: "/static/images/avatar.svg", Name: "Elyar 2", Bio: "This is some test bio 2", DateJoined: time.Now(), Password: password},
+		{ID: 3, Username: "JaneDoe", Email: "jane.doe@example.com", Name: "Jane Doe", Avatar: "/static/images/avatar.svg", Bio: "Enthusiastic learner", DateJoined: time.Now(), Password: password},
+		{ID: 4, Username: "JohnSmith", Email: "john.smith@example.com", Name: "John Smith", Avatar: "/static/images/avatar.svg", Bio: "Loves coding", DateJoined: time.Now(), Password: password},
+		{ID: 5, Username: "AliceW", Email: "alice.w@example.com", Name: "Alice W", Avatar: "/static/images/avatar.svg", Bio: "Avid reader", DateJoined: time.Now(), Password: password},
 	}
 	return db.CreateInBatches(users, len(users)).Error
 }
