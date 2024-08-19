@@ -2,7 +2,7 @@ package configs
 
 type CtxKey string
 
-const UserName CtxKey = "username"
+const User CtxKey = "user"
 
 const (
 	USERS_DB_NAME                  = "users"

@@ -23,3 +23,14 @@ type HomeTemplateData struct {
 	MessageList []domain.Message
 	RequestUser domain.User
 }
+
+type RoomForm struct {
+	Name        string
+	Description string
+}
+
+type CreateRoomTemplateData struct {
+	BaseTemplateData
+	TopicList []domain.TopicWithDetails
+	Form      RoomForm
+}
