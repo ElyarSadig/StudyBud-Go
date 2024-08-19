@@ -1,7 +1,9 @@
 package delivery
 
 import (
+	"encoding/base64"
 	"net/http"
+	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
@@ -29,6 +31,34 @@ func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	h.setCookie(w, sessionKey)
 	http.Redirect(w, r, "/home", http.StatusFound)
+}
+
+func (h *ApiHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	encryptedData, err := base64.URLEncoding.DecodeString(cookie.Value)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	key, err := h.aes.Decrypt(encryptedData)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	err = h.redis.Remove(ctx, "session", key)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	cookie.MaxAge = -1
+	cookie.Expires = time.Unix(0, 0)
+	http.SetCookie(w, cookie)
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func (h *ApiHandler) RegisterPage(w http.ResponseWriter, r *http.Request) {
