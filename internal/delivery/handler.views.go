@@ -187,3 +187,29 @@ func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
 	data.TopicList = topics.List
 	h.renderTemplate(w, "room_form.html", data)
 }
+
+func (h *ApiHandler) UpdateProfilePage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sessionValue := ctx.Value(configs.User).(domain.SessionValue)
+	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
+	user, err := useCase.GetUserByEmail(ctx, sessionValue.Email)
+	if err != nil {
+		data := BaseTemplateData{}
+		data.Message = err.Error()
+		h.renderTemplate(w, "update_user.html", data)
+		return
+	}
+	data := UpdateProfileTemplateData{
+		BaseTemplateData: BaseTemplateData{
+			IsAuthenticated: true,
+			Username:        sessionValue.Username,
+			AvatarURL:       sessionValue.Avatar,
+		},
+		Avatar:   user.Avatar,
+		Username: user.Username,
+		Name:     user.Name,
+		Email:    user.Email,
+		Bio:      user.Bio,
+	}
+	h.renderTemplate(w, "update_user.html", data)
+}
