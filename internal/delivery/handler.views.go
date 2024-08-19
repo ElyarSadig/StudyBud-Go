@@ -92,6 +92,14 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 	data := BaseTemplateData{}
+	sessionValue, ok := h.extractSessionFromCookie(r)
+	if ok {
+		data = BaseTemplateData{
+			AvatarURL:       sessionValue.Avatar,
+			Username:        sessionValue.Username,
+			IsAuthenticated: true,
+		}
+	}
 	ctx := r.Context()
 	useCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
 	queryParams := r.URL.Query()
@@ -157,4 +165,25 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 	data.MessageList = messages.MessageList
 	h.renderTemplate(w, "home.html", data)
+}
+
+func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sessionValue := ctx.Value(configs.User).(domain.SessionValue)
+	data := CreateRoomTemplateData{
+		BaseTemplateData: BaseTemplateData{
+			IsAuthenticated: true,
+			Username:        sessionValue.Username,
+			AvatarURL:       sessionValue.Avatar,
+		},
+	}
+	useCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
+	topics, err := useCase.ListAllTopics(ctx)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "room_form.html", data)
+		return
+	}
+	data.TopicList = topics.List
+	h.renderTemplate(w, "room_form.html", data)
 }

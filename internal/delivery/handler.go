@@ -78,27 +78,12 @@ func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any
 func (h *ApiHandler) ProtectedHandler(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		cookie, err := r.Cookie("session_token")
-		if err != nil {
+		sessionValue, ok := h.extractSessionFromCookie(r)
+		if !ok {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
-		encryptedData, err := base64.URLEncoding.DecodeString(cookie.Value)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		sessionValue, err := h.aes.Decrypt(encryptedData)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		exists, _ := h.redis.Inspect(ctx, "session", sessionValue)
-		if !exists {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		ctx = context.WithValue(ctx, configs.UserName, sessionValue)
+		ctx = context.WithValue(ctx, configs.User, sessionValue)
 		next(w, r.WithContext(ctx))
 	}
 }
