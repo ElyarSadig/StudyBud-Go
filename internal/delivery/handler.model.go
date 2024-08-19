@@ -34,3 +34,12 @@ type CreateRoomTemplateData struct {
 	TopicList []domain.TopicWithDetails
 	Form      RoomForm
 }
+
+type UpdateProfileTemplateData struct {
+	BaseTemplateData
+	Avatar   string
+	Name     string
+	Username string
+	Email    string
+	Bio      string
+}

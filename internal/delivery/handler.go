@@ -94,7 +94,7 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	cookie := &http.Cookie{
 		Name:   "session_token",
 		Value:  token,
-		MaxAge: 3600,
+		MaxAge: 15 * 60,
 		Secure: true,
 	}
 	http.SetCookie(w, cookie)

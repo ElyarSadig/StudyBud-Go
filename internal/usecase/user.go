@@ -72,7 +72,7 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 
 func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (string, error) {
 	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
-	user, err := repo.FindUserByEmail(ctx, form.Email)
+	user, err := repo.GetUserByEmail(ctx, form.Email)
 	if err != nil {
 		return "", err
 	}
@@ -87,4 +87,9 @@ func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (st
 		Avatar:   user.Avatar,
 	}
 	return u.setSession(ctx, sessionValue)
+}
+
+func (u *UserUseCase) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
+	return repo.GetUserByEmail(ctx, email)
 }

@@ -45,9 +45,9 @@ func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.U
 	return *obj, nil
 }
 
-func (r *UserRepository) FindUserByEmail(ctx context.Context, email string) (domain.User, error) {
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	var tempUser domain.User
-	err := r.db.Where("email = ?", email).Find(&tempUser).Error
+	err := r.db.Where("email = ?", email).First(&tempUser).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.User{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
