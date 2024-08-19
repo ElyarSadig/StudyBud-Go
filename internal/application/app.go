@@ -139,6 +139,7 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 		a.httpServer.AddHandler("get", api("health"), a.healthCheck.HandlerFunc)
 	}
 	a.httpServer.ServeStaticFiles("web/static")
+	a.httpServer.AddHandler("get", "/logout", apiHandler.Logout)
 	a.httpServer.AddHandler("get", "/login", apiHandler.LoginPage)
 	a.httpServer.AddHandler("post", "/login", apiHandler.LoginUser)
 	a.httpServer.AddHandler("get", "/register", apiHandler.RegisterPage)
