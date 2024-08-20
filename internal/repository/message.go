@@ -50,3 +50,12 @@ func (r *MessageRepository) Get(ctx context.Context, id string) (domain.Message,
 	}
 	return tempMessage, nil
 }
+
+func (r *MessageRepository) Delete(ctx context.Context, id string) error {
+	err := r.db.WithContext(ctx).Model(&domain.Message{}).Delete("id = ?", id).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return nil
+}

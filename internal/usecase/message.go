@@ -48,7 +48,20 @@ func (u *MessageUseCase) GetUserMessage(ctx context.Context, id string) (domain.
 		return domain.Message{}, err
 	}
 	if message.User.Username != sessionValue.Username {
-		return domain.Message{}, u.errHandler.New(http.StatusForbidden, "you are not allowed here!")
+		return domain.Message{}, u.errHandler.New(http.StatusForbidden, "forbidden!")
 	}
 	return message, nil
+}
+
+func (u *MessageUseCase) Delete(ctx context.Context, id string) error {
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
+	message, err := repo.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if message.User.Username != sessionValue.Username {
+		return u.errHandler.New(http.StatusUnauthorized, "forbidden!")
+	}
+	return repo.Delete(ctx, id)
 }
