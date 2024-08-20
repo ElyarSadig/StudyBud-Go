@@ -54,3 +54,10 @@ type UserLoginForm struct {
 	Email    string
 	Password string
 }
+
+type UpdateUser struct {
+	Avatar   string
+	Name     string
+	Username string
+	Bio      string
+}
