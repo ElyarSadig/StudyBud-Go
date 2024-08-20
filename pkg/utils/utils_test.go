@@ -1,6 +1,9 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestValidateName(t *testing.T) {
 	testCases := []struct {
@@ -159,6 +162,78 @@ func TestValidateEmail(t *testing.T) {
 			err := ValidateEmail(tC.email)
 			if err != nil && err.Error() != tC.expectedErrorMessage {
 				t.Errorf("expected error to be %s, but got %s", tC.expectedErrorMessage, err.Error())
+			}
+		})
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	testCases := []struct {
+		duration time.Duration
+		expected string
+		desc     string
+	}{
+		{
+			duration: time.Second * 15,
+			expected: "15 seconds",
+			desc:     "15 seconds",
+		},
+		{
+			duration: time.Minute * 1,
+			expected: "1 minute",
+			desc:     "1 minute",
+		},
+		{
+			duration: time.Minute * 34,
+			expected: "34 minutes",
+			desc:     "34 minutes",
+		},
+		{
+			duration: time.Hour * 1,
+			expected: "1 hour",
+			desc:     "1 hour",
+		},
+		{
+			duration: time.Hour * 2,
+			expected: "2 hours",
+			desc:     "2 hours",
+		},
+		{
+			duration: time.Hour * 24,
+			expected: "1 day",
+			desc:     "1 day",
+		},
+		{
+			duration: time.Hour * 24 * 5,
+			expected: "5 days",
+			desc:     "5 days",
+		},
+		{
+			duration: time.Hour * 24 * 30,
+			expected: "1 month",
+			desc:     "1 month",
+		},
+		{
+			duration: time.Hour * 24 * 60,
+			expected: "2 months",
+			desc:     "2 months",
+		},
+		{
+			duration: time.Hour * 24 * 500,
+			expected: "1 year",
+			desc:     "500 days",
+		},
+		{
+			duration: time.Hour * 24 * 1000,
+			expected: "2 years",
+			desc:     "2 years",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			output := FormatDuration(tC.duration)
+			if output != tC.expected {
+				t.Errorf("expected %s, but got %s", tC.expected, output)
 			}
 		})
 	}
