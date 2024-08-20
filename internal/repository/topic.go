@@ -28,12 +28,13 @@ func (r *TopicRepository) None() {}
 
 func (r *TopicRepository) ListAllTopics(ctx context.Context) (domain.Topics, error) {
 	topics := domain.Topics{}
-	err := r.db.Model(domain.Topic{}).Count(&topics.Count).Error
+	err := r.db.WithContext(ctx).Model(domain.Topic{}).Count(&topics.Count).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Topics{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
 	err = r.db.
+		WithContext(ctx).
 		Table("topics").
 		Select("topics.name, COUNT(rooms.id) as room_count").
 		Joins("LEFT JOIN rooms ON rooms.topic_id = topics.id").
@@ -49,12 +50,13 @@ func (r *TopicRepository) ListAllTopics(ctx context.Context) (domain.Topics, err
 
 func (r *TopicRepository) SearchTopicByName(ctx context.Context, name string) (domain.Topics, error) {
 	topics := domain.Topics{}
-	err := r.db.Model(domain.Topic{}).Count(&topics.Count).Error
+	err := r.db.WithContext(ctx).Model(domain.Topic{}).Count(&topics.Count).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Topics{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
 	err = r.db.
+		WithContext(ctx).
 		Table("topics").
 		Select("topics.name, COUNT(rooms.id) as room_count").
 		Joins("LEFT JOIN rooms ON rooms.topic_id = topics.id").

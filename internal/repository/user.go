@@ -28,15 +28,15 @@ func (r *UserRepository) None() {}
 
 func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.User, error) {
 	var tempUser domain.User
-	r.db.Where("username = ?", obj.Username).Find(&tempUser)
+	r.db.WithContext(ctx).Where("username = ?", obj.Username).Find(&tempUser)
 	if tempUser.Username != "" {
 		return domain.User{}, r.errHandler.New(http.StatusConflict, "username already in use")
 	}
-	r.db.Where("email = ?", obj.Email).Find(&tempUser)
+	r.db.WithContext(ctx).Where("email = ?", obj.Email).Find(&tempUser)
 	if tempUser.Email != "" {
 		return domain.User{}, r.errHandler.New(http.StatusConflict, "email already in use")
 	}
-	result := r.db.Create(obj)
+	result := r.db.WithContext(ctx).Create(obj)
 	err := result.Error
 	if err != nil {
 		r.logger.Error(err.Error())
@@ -47,7 +47,7 @@ func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.U
 
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	var tempUser domain.User
-	err := r.db.Where("email = ?", email).First(&tempUser).Error
+	err := r.db.WithContext(ctx).Where("email = ?", email).First(&tempUser).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.User{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
