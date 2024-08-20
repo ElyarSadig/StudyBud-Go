@@ -93,6 +93,17 @@ func (h *ApiHandler) ProtectedHandler(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func (h *ApiHandler) RedirectIfAuthenticated(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, ok := h.extractSessionFromCookie(r)
+		if ok {
+			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
+}
+
 func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	result, _ := h.aes.Encrypt(key)
 	token := base64.URLEncoding.EncodeToString(result)
@@ -109,7 +120,6 @@ func (h *ApiHandler) extractSessionFromCookie(r *http.Request) (domain.SessionVa
 	ctx := r.Context()
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		h.logger.Debug(err.Error())
 		return domain.SessionValue{}, false
 	}
 	token := cookie.Value
