@@ -40,3 +40,13 @@ func (r *MessageRepository) ListAllMessages(ctx context.Context) (domain.Message
 	}
 	return messages, nil
 }
+
+func (r *MessageRepository) Get(ctx context.Context, id string) (domain.Message, error) {
+	var tempMessage domain.Message
+	err := r.db.Model(&domain.Message{}).Preload("User").Where("id = ?", id).First(&tempMessage).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Message{}, r.errHandler.New(http.StatusNotFound, "not found")
+	}
+	return tempMessage, nil
+}
