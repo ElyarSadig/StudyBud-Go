@@ -239,8 +239,8 @@ func (h *ApiHandler) DeleteMessagePage(w http.ResponseWriter, r *http.Request) {
 	request := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
 	baseData := BaseTemplateData{
 		IsAuthenticated: true,
-		AvatarURL: request.Avatar,
-		Username:  request.Username,
+		AvatarURL:       request.Avatar,
+		Username:        request.Username,
 	}
 	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	id := chi.URLParam(r, "id")
@@ -266,4 +266,26 @@ func (h *ApiHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
+}
+
+func (h *ApiHandler) ActivitiesPage(w http.ResponseWriter, r *http.Request) {
+	sessionValue, ok := h.extractSessionFromCookie(r)
+	baseData := BaseTemplateData{
+		AvatarURL:       sessionValue.Avatar,
+		Username:        sessionValue.Username,
+		IsAuthenticated: ok,
+	}
+	ctx := r.Context()
+	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	messages, err := useCase.ListAllMessages(ctx)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "activity.html", baseData)
+		return
+	}
+	data := ActivitiesTemplateData{
+		BaseTemplateData: baseData,
+		MessageList:      messages.MessageList,
+	}
+	h.renderTemplate(w, "activity.html", data)
 }

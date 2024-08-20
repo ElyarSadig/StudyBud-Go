@@ -33,7 +33,7 @@ func (r *MessageRepository) ListAllMessages(ctx context.Context) (domain.Message
 		r.logger.Error(err.Error())
 		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
-	err = r.db.WithContext(ctx).Model(domain.Message{}).Preload("Room").Preload("User").Order("created DESC").Limit(5).Find(&messages.MessageList).Error
+	err = r.db.WithContext(ctx).Model(&domain.Message{}).Preload("Room").Preload("User").Order("created DESC").Limit(5).Find(&messages.MessageList).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")

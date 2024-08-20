@@ -48,3 +48,8 @@ type DeleteMessageForm struct {
 	BaseTemplateData
 	MessageObj string
 }
+
+type ActivitiesTemplateData struct {
+	BaseTemplateData
+	MessageList []domain.Message
+}
