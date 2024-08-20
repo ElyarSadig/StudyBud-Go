@@ -87,13 +87,39 @@ func ValidateEmail(email string) error {
 func FormatDuration(d time.Duration) string {
 	hours := int(d.Hours())
 	days := hours / 24
+	months := days / 30
+	years := months / 12
+	if years > 0 {
+		if years == 1 {
+			return fmt.Sprintf("%d year", years)
+		}
+		return fmt.Sprintf("%d years", years)
+	}
+	if months > 0 {
+		if months == 1 {
+			return fmt.Sprintf("%d month", months)
+		}
+		return fmt.Sprintf("%d months", months)
+	}
 	if days > 0 {
 		if days > 1 {
 			return fmt.Sprintf("%d days", days)
-		} else {
-			return fmt.Sprintf("%d day", days)
 		}
+		return fmt.Sprintf("%d day", days)
 	}
-	minutes := int(d.Minutes()) % 60
-	return fmt.Sprintf("%dh %dm", hours, minutes)
+	if hours > 0 {
+		if hours == 1 {
+			return fmt.Sprintf("%d hour", hours)
+		}
+		return fmt.Sprintf("%d hours", hours)
+	}
+	minutes := int(d.Minutes())
+	if minutes > 0 {
+		if minutes == 1 {
+			return fmt.Sprintf("%d minute", minutes)
+		}
+		return fmt.Sprintf("%d minutes", minutes)
+	}
+	seconds := int(d.Seconds())
+	return fmt.Sprintf("%d seconds", seconds)
 }
