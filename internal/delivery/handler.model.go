@@ -43,3 +43,8 @@ type UpdateProfileTemplateData struct {
 	Email    string
 	Bio      string
 }
+
+type DeleteMessageForm struct {
+	BaseTemplateData
+	MessageObj string
+}

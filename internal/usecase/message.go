@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
@@ -37,4 +38,17 @@ func (u *MessageUseCase) None() {}
 func (u *MessageUseCase) ListAllMessages(ctx context.Context) (domain.Messages, error) {
 	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
 	return repo.ListAllMessages(ctx)
+}
+
+func (u *MessageUseCase) GetUserMessage(ctx context.Context, id string) (domain.Message, error) {
+	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	message, err := repo.Get(ctx, id)
+	if err != nil {
+		return domain.Message{}, err
+	}
+	if message.User.Username != sessionValue.Username {
+		return domain.Message{}, u.errHandler.New(http.StatusForbidden, "you are not allowed here!")
+	}
+	return message, nil
 }

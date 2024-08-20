@@ -149,6 +149,7 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("get", "/create-room", apiHandler.ProtectedHandler(apiHandler.CreateRoomPage))
 	a.httpServer.AddHandler("get", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfilePage))
 	a.httpServer.AddHandler("post", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfile))
+	a.httpServer.AddHandler("get", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessagePage))
 }
 
 func api(path string) string {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
+	"github.com/go-chi/chi/v5"
 )
 
 func (h *ApiHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
@@ -231,4 +232,26 @@ func (h *ApiHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	h.setCookie(w, sessionKey)
 	http.Redirect(w, r, "/home", http.StatusFound)
+}
+
+func (h *ApiHandler) DeleteMessagePage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	request := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	baseData := BaseTemplateData{
+		IsAuthenticated: true,
+		AvatarURL: request.Avatar,
+		Username:  request.Username,
+	}
+	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	id := chi.URLParam(r, "id")
+	message, err := useCase.GetUserMessage(ctx, id)
+	if err != nil {
+		h.renderTemplate(w, "not_found.html", baseData)
+		return
+	}
+	data := DeleteMessageForm{
+		BaseTemplateData: baseData,
+		MessageObj:       message.Body,
+	}
+	h.renderTemplate(w, "delete_message.html", data)
 }
