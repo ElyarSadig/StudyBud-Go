@@ -3,11 +3,13 @@ package usecase
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
 	"github.com/elyarsadig/studybud-go/pkg/errorHandler"
 	"github.com/elyarsadig/studybud-go/pkg/logger"
+	"github.com/elyarsadig/studybud-go/pkg/utils"
 )
 
 type MessageUseCase struct {
@@ -37,7 +39,14 @@ func (u *MessageUseCase) None() {}
 
 func (u *MessageUseCase) ListAllMessages(ctx context.Context) (domain.Messages, error) {
 	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
-	return repo.ListAllMessages(ctx)
+	messages, err := repo.ListAllMessages(ctx)
+	if err != nil {
+		return domain.Messages{}, err
+	}
+	for i, message := range messages.MessageList {
+		messages.MessageList[i].Since = utils.FormatDuration(time.Since(message.Created))
+	}
+	return messages, nil
 }
 
 func (u *MessageUseCase) GetUserMessage(ctx context.Context, id string) (domain.Message, error) {
