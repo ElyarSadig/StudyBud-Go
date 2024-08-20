@@ -54,6 +54,7 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 		Name:     form.Name,
 		Username: form.Username,
 		Email:    form.Email,
+		Avatar:   configs.DefaultAvatar,
 		Password: hashedPassword,
 		IsActive: true,
 	}
@@ -92,4 +93,27 @@ func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (st
 func (u *UserUseCase) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
 	return repo.GetUserByEmail(ctx, email)
+}
+
+func (u *UserUseCase) UpdateInfo(ctx context.Context, obj *domain.UpdateUser) (string, error) {
+	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	user := domain.User{
+		Email:    sessionValue.Email,
+		Avatar:   obj.Avatar,
+		Username: obj.Username,
+		Bio:      obj.Bio,
+		Name:     obj.Name,
+	}
+	newSessionValue := domain.SessionValue{
+		Username: obj.Username,
+		Name:     obj.Name,
+		Email:    sessionValue.Email,
+		Avatar:   obj.Avatar,
+	}
+	err := repo.Update(ctx, user)
+	if err != nil {
+		return "", err
+	}
+	return u.setSession(ctx, newSessionValue)
 }

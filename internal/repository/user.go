@@ -54,3 +54,12 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (doma
 	}
 	return tempUser, nil
 }
+
+func (r *UserRepository) Update(ctx context.Context, user domain.User) error {
+	err := r.db.Model(&domain.User{}).WithContext(ctx).Where("email = ?", user.Email).Updates(user).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return nil
+}

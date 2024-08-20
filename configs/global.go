@@ -2,9 +2,10 @@ package configs
 
 type CtxKey string
 
-const User CtxKey = "user"
+const UserCtxKey CtxKey = "user"
 
 const (
+	DefaultAvatar                  = "/static/images/avatar.svg"
 	USERS_DB_NAME                  = "users"
 	USER_PERMISSIONS_DB_NAME       = "user_permissions"
 	USER_GROUPS_DB_NAME            = "user_groups"

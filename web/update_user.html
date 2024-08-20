@@ -23,23 +23,19 @@
                             <label for="profile_pic">Avatar</label>
                             Currently: <a href="{{ .Avatar }}">avatar.svg</a><br>
                             Change:
-                            <input type="file" name="avatar" accept="image/*" id="id_avatar">
+                            <input type="file" name="avatar" accept="image/*" id="profile_pic">
                         </div>
                         <div class="form__group">
-                            <label for="profile_pic">Name</label>
-                            <input type="text" name="name" value="{{ .Name }}" maxlength="200" required="" id="id_name">
+                            <label for="name">Name</label>
+                            <input type="text" name="name" value="{{ .Name }}" maxlength="200" required="" id="name">
                         </div>
                         <div class="form__group">
-                            <label for="profile_pic">Username</label>
-                            <input type="text" name="username" value="{{ .Username }}" maxlength="150" required="" id="id_username">
+                            <label for="username">Username</label>
+                            <input type="text" name="username" value="{{ .Username }}" maxlength="150" required="" id="username">
                         </div>
                         <div class="form__group">
-                            <label for="profile_pic">Email</label>
-                            <input type="email" name="email" value="{{ .Email }}" maxlength="254" required="" id="id_email">
-                        </div>
-                        <div class="form__group">
-                            <label for="profile_pic">Bio</label>
-                            <textarea name="bio" cols="40" rows="10" required="" id="id_bio">{{ .Bio }}</textarea>
+                            <label for="bio">Bio</label>
+                            <textarea name="bio" cols="40" rows="10" required="" id="bio">{{ .Bio }}</textarea>
                         </div>
                         <div class="form__action">
                             <a class="btn btn--dark" href="/home">Cancel</a>

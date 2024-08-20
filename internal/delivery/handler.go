@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"html/template"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/elyarsadig/studybud-go/configs"
@@ -15,6 +19,7 @@ import (
 	"github.com/elyarsadig/studybud-go/pkg/logger"
 	redispkg "github.com/elyarsadig/studybud-go/pkg/redis"
 	"github.com/elyarsadig/studybud-go/transport"
+	"github.com/google/uuid"
 )
 
 type ApiHandler struct {
@@ -83,7 +88,7 @@ func (h *ApiHandler) ProtectedHandler(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
-		ctx = context.WithValue(ctx, configs.User, sessionValue)
+		ctx = context.WithValue(ctx, configs.UserCtxKey, sessionValue)
 		next(w, r.WithContext(ctx))
 	}
 }
@@ -94,7 +99,7 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	cookie := &http.Cookie{
 		Name:   "session_token",
 		Value:  token,
-		MaxAge: 15 * 60,
+		MaxAge: 5 * 60,
 		Secure: true,
 	}
 	http.SetCookie(w, cookie)
@@ -126,4 +131,47 @@ func (h *ApiHandler) extractSessionFromCookie(r *http.Request) (domain.SessionVa
 		return domain.SessionValue{}, false
 	}
 	return sessionValue, true
+}
+
+func (h *ApiHandler) extractUserProfileUpdateForm(r *http.Request) (domain.UpdateUser, error) {
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max memory
+	if err != nil {
+		return domain.UpdateUser{}, err
+	}
+	name := r.FormValue("name")
+	username := r.FormValue("username")
+	bio := r.FormValue("bio")
+	file, handler, err := r.FormFile("avatar")
+	if err != nil {
+		return domain.UpdateUser{}, err
+	}
+	defer file.Close()
+	avatarPath, err := h.saveFileToServer(file, handler)
+	if err != nil {
+		return domain.UpdateUser{}, err
+	}
+	user := domain.UpdateUser{
+		Name:     name,
+		Username: username,
+		Bio:      bio,
+		Avatar:   avatarPath,
+	}
+	return user, nil
+}
+
+func (h *ApiHandler) saveFileToServer(file multipart.File, handler *multipart.FileHeader) (string, error) {
+	uploadDir := "./web/static/uploads"
+	ext := filepath.Ext(handler.Filename)
+	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+	filePath := filepath.Join(uploadDir, filename)
+	destFile, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer destFile.Close()
+	_, err = io.Copy(destFile, file)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("/static/uploads/%s", filename), nil
 }

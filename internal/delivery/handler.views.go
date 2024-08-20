@@ -169,7 +169,7 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	sessionValue := ctx.Value(configs.User).(domain.SessionValue)
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
 	data := CreateRoomTemplateData{
 		BaseTemplateData: BaseTemplateData{
 			IsAuthenticated: true,
@@ -190,7 +190,7 @@ func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) UpdateProfilePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	sessionValue := ctx.Value(configs.User).(domain.SessionValue)
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	user, err := useCase.GetUserByEmail(ctx, sessionValue.Email)
 	if err != nil {
@@ -212,4 +212,23 @@ func (h *ApiHandler) UpdateProfilePage(w http.ResponseWriter, r *http.Request) {
 		Bio:      user.Bio,
 	}
 	h.renderTemplate(w, "update_user.html", data)
+}
+
+func (h *ApiHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	updateUser, err := h.extractUserProfileUpdateForm(r)
+	if err != nil {
+		h.logger.Error(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
+	sessionKey, err := useCase.UpdateInfo(ctx, &updateUser)
+	if err != nil {
+		data := BaseTemplateData{Message: err.Error()}
+		h.renderTemplate(w, "update_user.html", data)
+		return
+	}
+	h.setCookie(w, sessionKey)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }

@@ -111,3 +111,6 @@ go.work
 /_tempData
 /infra/.env
 .env
+
+# uploaded user images
+web/static/uploads/*
