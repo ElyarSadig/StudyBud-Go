@@ -28,12 +28,12 @@ func (r *MessageRepository) None() {}
 
 func (r *MessageRepository) ListAllMessages(ctx context.Context) (domain.Messages, error) {
 	messages := domain.Messages{}
-	err := r.db.Model(domain.Message{}).Count(&messages.Count).Error
+	err := r.db.WithContext(ctx).Model(domain.Message{}).Count(&messages.Count).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
-	err = r.db.Model(domain.Message{}).Preload("Room").Preload("User").Order("created DESC").Limit(5).Find(&messages.MessageList).Error
+	err = r.db.WithContext(ctx).Model(domain.Message{}).Preload("Room").Preload("User").Order("created DESC").Limit(5).Find(&messages.MessageList).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
@@ -43,7 +43,7 @@ func (r *MessageRepository) ListAllMessages(ctx context.Context) (domain.Message
 
 func (r *MessageRepository) Get(ctx context.Context, id string) (domain.Message, error) {
 	var tempMessage domain.Message
-	err := r.db.Model(&domain.Message{}).Preload("User").Where("id = ?", id).First(&tempMessage).Error
+	err := r.db.WithContext(ctx).Model(&domain.Message{}).Preload("User").Where("id = ?", id).First(&tempMessage).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Message{}, r.errHandler.New(http.StatusNotFound, "not found")

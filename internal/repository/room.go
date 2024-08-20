@@ -28,12 +28,14 @@ func (r *RoomRepository) None() {}
 
 func (r *RoomRepository) ListAllRooms(ctx context.Context) (domain.Rooms, error) {
 	rooms := domain.Rooms{}
-	err := r.db.Model(&domain.Room{}).Count(&rooms.Count).Error
+	err := r.db.WithContext(ctx).Model(&domain.Room{}).Count(&rooms.Count).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Rooms{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
-	err = r.db.Model(&domain.Room{}).
+	err = r.db.
+		WithContext(ctx).
+		Model(&domain.Room{}).
 		Preload("Host").
 		Preload("Topic").
 		Joins("LEFT JOIN room_participants ON room_participants.room_id = rooms.id").
