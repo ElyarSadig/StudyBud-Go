@@ -255,3 +255,15 @@ func (h *ApiHandler) DeleteMessagePage(w http.ResponseWriter, r *http.Request) {
 	}
 	h.renderTemplate(w, "delete_message.html", data)
 }
+
+func (h *ApiHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	err := useCase.Delete(ctx, id)
+	if err != nil {
+		h.renderTemplate(w, "delete_message.html", BaseTemplateData{Message: err.Error()})
+		return
+	}
+	http.Redirect(w, r, "/home", http.StatusFound)
+}
