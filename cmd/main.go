@@ -102,7 +102,7 @@ func main() {
 		logger,
 		serviceInfo,
 		aes,
-		24*time.Hour*time.Duration(cfg.ExtraData.SessionExpireDuration),
+		time.Minute * time.Duration(cfg.ExtraData.SessionExpireDuration),
 	)
 
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"math/rand"
 
@@ -50,12 +49,13 @@ func (u *UserUseCase) generateDigitString(length int) string {
 
 func (u *UserUseCase) setSession(ctx context.Context, sessionValue domain.SessionValue) (string, error) {
 	key := u.generateDigitString(6)
+	sessionValue.SessionKey = key
 	v, err := json.Marshal(sessionValue)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
-	err = u.redis.Set(ctx, "session", time.Minute*15, key, v)
+	err = u.redis.Set(ctx, "session", u.sessionExpireDuration, key, v)
 	if err != nil {
 		u.logger.Error(err.Error())
 		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")

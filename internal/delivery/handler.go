@@ -24,22 +24,22 @@ import (
 
 type ApiHandler struct {
 	transport.HttpServer
-	ctx        context.Context
-	logger     logger.Logger
-	useCases   map[string]domain.Bridger
-	errHandler errorHandler.Handler
-	aes        *encryption.AES[string]
-	redis      *redispkg.Redis
+	cookieExpiration int
+	logger           logger.Logger
+	useCases         map[string]domain.Bridger
+	errHandler       errorHandler.Handler
+	aes              *encryption.AES[string]
+	redis            *redispkg.Redis
 }
 
-func NewApiHandler(ctx context.Context, aes *encryption.AES[string], redis *redispkg.Redis, errHandler errorHandler.Handler, logger logger.Logger, useCases ...domain.Bridger) (*ApiHandler, error) {
+func NewApiHandler(ctx context.Context, cookieExpiration int, aes *encryption.AES[string], redis *redispkg.Redis, errHandler errorHandler.Handler, logger logger.Logger, useCases ...domain.Bridger) (*ApiHandler, error) {
 	handler := &ApiHandler{
-		useCases:   make(map[string]domain.Bridger),
-		ctx:        ctx,
-		errHandler: errHandler,
-		aes:        aes,
-		logger:     logger,
-		redis:      redis,
+		useCases:         make(map[string]domain.Bridger),
+		errHandler:       errHandler,
+		aes:              aes,
+		logger:           logger,
+		redis:            redis,
+		cookieExpiration: cookieExpiration,
 	}
 
 	for _, useCase := range useCases {
@@ -110,7 +110,7 @@ func (h *ApiHandler) setCookie(w http.ResponseWriter, key string) {
 	cookie := &http.Cookie{
 		Name:   "session_token",
 		Value:  token,
-		MaxAge: 5 * 60,
+		MaxAge: h.cookieExpiration,
 		Secure: true,
 	}
 	http.SetCookie(w, cookie)
