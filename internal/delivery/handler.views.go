@@ -312,3 +312,52 @@ func (h *ApiHandler) ActivitiesPage(w http.ResponseWriter, r *http.Request) {
 	}
 	h.renderTemplate(w, "activity.html", data)
 }
+
+func (h *ApiHandler) UserProfilePage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sv, ok := h.extractSessionFromCookie(r)
+	baseData := BaseTemplateData{
+		AvatarURL:       sv.Avatar,
+		Username:        sv.Username,
+		IsAuthenticated: ok,
+	}
+	data := UserProfileTemplateData{
+		BaseTemplateData: baseData,
+	}
+	userID := chi.URLParam(r, "id")
+	topicUC := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
+	messageUC := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	userUC := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
+	roomUC := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	topics, err := topicUC.ListAllTopics(ctx)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "profile.html", data)
+		return
+	}
+	user, err := userUC.GetUserById(ctx, userID)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "profile.html", data)
+		return
+	}
+	rooms, err := roomUC.ListUserRooms(ctx, userID)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "profile.html", data)
+		return
+	}
+	messages, err := messageUC.ListUserMessages(ctx, userID)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "profile.html", data)
+		return
+	}
+	data.TopicList = topics.List
+	data.TopicsCount = topics.Count
+	data.User = user
+	data.RoomList = rooms.List
+	data.RoomCount = rooms.Count
+	data.MessageList = messages.MessageList
+	h.renderTemplate(w, "profile.html", data)
+}

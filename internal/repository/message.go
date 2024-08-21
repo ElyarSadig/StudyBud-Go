@@ -59,3 +59,18 @@ func (r *MessageRepository) Delete(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (r *MessageRepository) ListUserMessages(ctx context.Context, userID string) (domain.Messages, error) {
+	messages := domain.Messages{}
+	err := r.db.WithContext(ctx).Model(&domain.Message{}).Where("user_id = ?", userID).Count(&messages.Count).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	err = r.db.WithContext(ctx).Model(&domain.Message{}).Preload("Room").Preload("User").Order("created DESC").Where("user_id = ?", userID).Limit(5).Find(&messages.MessageList).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return messages, nil
+}

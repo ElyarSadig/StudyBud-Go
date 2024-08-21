@@ -21,7 +21,6 @@ type HomeTemplateData struct {
 	RoomList    []domain.RoomWithDetails
 	RoomCount   int64
 	MessageList []domain.Message
-	RequestUser domain.User
 }
 
 type CreateRoomTemplateData struct {
@@ -46,5 +45,15 @@ type DeleteMessageForm struct {
 
 type ActivitiesTemplateData struct {
 	BaseTemplateData
+	MessageList []domain.Message
+}
+
+type UserProfileTemplateData struct {
+	BaseTemplateData
+	TopicList   []domain.TopicWithDetails
+	TopicsCount int64
+	User        domain.User
+	RoomList    []domain.RoomWithDetails
+	RoomCount   int64
 	MessageList []domain.Message
 }

@@ -58,3 +58,28 @@ func (r *RoomRepository) CreateRoom(ctx context.Context, room *domain.Room) erro
 	}
 	return nil
 }
+
+func (r *RoomRepository) ListUserRooms(ctx context.Context, userID string) (domain.Rooms, error) {
+	rooms := domain.Rooms{}
+	err := r.db.WithContext(ctx).Model(&domain.Room{}).Where("host_id = ?", userID).Count(&rooms.Count).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Rooms{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	err = r.db.
+		WithContext(ctx).
+		Model(&domain.Room{}).
+		Preload("Host").
+		Preload("Topic").
+		Where("host_id = ?", userID).
+		Joins("LEFT JOIN room_participants ON room_participants.room_id = rooms.id").
+		Select("rooms.*, COUNT(room_participants.id) as participants_count").
+		Group("rooms.id").
+		Order("created DESC").
+		Find(&rooms.List).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Rooms{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return rooms, nil
+}

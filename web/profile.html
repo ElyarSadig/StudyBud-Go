@@ -1,0 +1,46 @@
+{{ define "content" }}
+  <main class="profile-page layout layout--3">
+    <div class="container">
+      <!-- Topics Start -->
+      {{ template "topics_component.html" . }}
+      <!-- Topics End -->
+
+      <!-- Room List Start -->
+      <div class="roomList">
+        <div class="profile">
+          <div class="profile__avatar">
+            <div class="avatar avatar--large active">
+              <img src="{{ .User.Avatar }}" />
+            </div>
+          </div>
+          <div class="profile__info">
+            <h3>{{ .User.Name }}</h3>
+            <p>@{{ .User.Username }}</p>
+            {{ if eq .Username .User.Username }}
+                <a href="/user-update" class="btn btn--main btn--pill">Edit Profile</a>
+            {{ end }}
+          </div>
+          <div class="profile__about">
+            <h3>About</h3>
+            <p>
+              {{ .User.Bio }}
+            </p>
+          </div>
+        </div>
+
+        <div class="roomList__header">
+          <div>
+            <h2>Study Rooms Hosted by {{ .User.Name }}</a>
+            </h2>
+          </div>
+        </div>
+        {{ template "feed_component.html" . }}
+      </div>
+      <!-- Room List End -->
+
+      <!-- Activities Start -->
+        {{ template "activity_component.html" . }}
+      <!-- Activities End -->
+    </div>
+  </main>
+{{ end }}
