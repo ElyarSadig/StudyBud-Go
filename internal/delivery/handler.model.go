@@ -38,9 +38,9 @@ type UpdateProfileTemplateData struct {
 	Bio      string
 }
 
-type DeleteMessageForm struct {
+type DeleteForm struct {
 	BaseTemplateData
-	MessageObj string
+	Obj string
 }
 
 type ActivitiesTemplateData struct {

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
@@ -101,4 +102,17 @@ func (u *RoomUseCase) ListRoomParticipants(ctx context.Context, roomID string) (
 		users = append(users, participant.User)
 	}
 	return users, nil
+}
+
+func (u *RoomUseCase) GetUserRoom(ctx context.Context, roomID string) (domain.Room, error) {
+	sv := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	room, err := repo.GetRoomById(ctx, roomID)
+	if err != nil {
+		return domain.Room{}, err
+	}
+	if room.Host.Username != sv.Username {
+		return domain.Room{}, u.errHandler.New(http.StatusForbidden, "forbidden!")
+	}
+	return room, nil
 }

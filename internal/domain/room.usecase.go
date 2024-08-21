@@ -9,4 +9,5 @@ type RoomUseCase interface {
 	ListUserRooms(ctx context.Context, userID string) (Rooms, error)
 	GetRoomById(ctx context.Context, roomID string) (Room, error)
 	ListRoomParticipants(ctx context.Context, roomID string) ([]User, error)
+	GetUserRoom(ctx context.Context, roomID string) (Room, error)
 }
