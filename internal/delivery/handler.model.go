@@ -25,6 +25,7 @@ type HomeTemplateData struct {
 }
 
 type RoomForm struct {
+	Topic       string
 	Name        string
 	Description string
 }

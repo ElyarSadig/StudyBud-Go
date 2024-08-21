@@ -36,10 +36,12 @@ type UserPermission struct {
 }
 
 type SessionValue struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Avatar   string `json:"avatar"`
+	ID         int    `json:"id"`
+	SessionKey string `json:"session_key"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
 }
 
 type UserRegisterForm struct {

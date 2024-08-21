@@ -34,5 +34,5 @@ redis:
       - "127.0.0.1:46379"
 extra_data:
   health_check: true
-  session_expire_duration: 2 #days
+  session_expire_duration: 5 #minutes
   max_attempt_login_times: 3

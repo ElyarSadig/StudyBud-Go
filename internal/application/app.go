@@ -121,11 +121,11 @@ func (a *Application) registerServiceLayers(ctx context.Context) error {
 	roomRepo := repository.NewRoom(a.db, a.error, a.logger)
 	messageRepo := repository.NewMessage(a.db, a.error, a.logger)
 
-	userUseCase := usecase.NewUser(a.error, a.redis, a.logger, userRepo)
+	userUseCase := usecase.NewUser(a.error, a.sessionExpiration, a.redis, a.logger, userRepo)
 	topicUseCase := usecase.NewTopic(a.error, a.logger, topicRepo)
 	roomUseCase := usecase.NewRoom(a.error, a.logger, roomRepo)
 	messageUseCase := usecase.NewMessage(a.error, a.logger, messageRepo)
-	apiHandler, err := delivery.NewApiHandler(ctx, a.aes, a.redis, a.error, a.logger, userUseCase, topicUseCase, roomUseCase, messageUseCase)
+	apiHandler, err := delivery.NewApiHandler(ctx, int(a.sessionExpiration.Seconds()), a.aes, a.redis, a.error, a.logger, userUseCase, topicUseCase, roomUseCase, messageUseCase)
 	if err != nil {
 		return err
 	}
@@ -140,18 +140,20 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	}
 	a.httpServer.ServeStaticFiles("web/static")
 	a.httpServer.AddHandler("get", "/logout", apiHandler.Logout)
+	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)
+	a.httpServer.AddHandler("get", "/home", apiHandler.HomePage)
+	a.httpServer.AddHandler("get", "/activity", apiHandler.ActivitiesPage)
 	a.httpServer.AddHandler("get", "/login", apiHandler.RedirectIfAuthenticated(apiHandler.LoginPage))
 	a.httpServer.AddHandler("post", "/login", apiHandler.RedirectIfAuthenticated(apiHandler.LoginUser))
 	a.httpServer.AddHandler("get", "/register", apiHandler.RedirectIfAuthenticated(apiHandler.RegisterPage))
 	a.httpServer.AddHandler("post", "/register", apiHandler.RedirectIfAuthenticated(apiHandler.RegisterUser))
-	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)
-	a.httpServer.AddHandler("get", "/home", apiHandler.HomePage)
 	a.httpServer.AddHandler("get", "/create-room", apiHandler.ProtectedHandler(apiHandler.CreateRoomPage))
+	a.httpServer.AddHandler("post", "/create-room", apiHandler.ProtectedHandler(apiHandler.CreateRoom))
 	a.httpServer.AddHandler("get", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfilePage))
 	a.httpServer.AddHandler("post", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfile))
 	a.httpServer.AddHandler("get", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessagePage))
 	a.httpServer.AddHandler("post", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessage))
-	a.httpServer.AddHandler("get", "/activity", apiHandler.ActivitiesPage)
+
 }
 
 func api(path string) string {
