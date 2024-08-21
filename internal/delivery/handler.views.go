@@ -361,3 +361,41 @@ func (h *ApiHandler) UserProfilePage(w http.ResponseWriter, r *http.Request) {
 	data.MessageList = messages.MessageList
 	h.renderTemplate(w, "profile.html", data)
 }
+
+func (h *ApiHandler) RoomPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sv, ok := h.extractSessionFromCookie(r)
+	baseData := BaseTemplateData{
+		IsAuthenticated: ok,
+		AvatarURL:       sv.Avatar,
+		Username:        sv.Username,
+	}
+	roomID := chi.URLParam(r, "id")
+	roomUseCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	messageUseCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	room, err := roomUseCase.GetRoomById(ctx, roomID)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "room.html", baseData)
+		return
+	}
+	participants, err := roomUseCase.ListRoomParticipants(ctx, roomID)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "room.html", baseData)
+		return
+	}
+	messages, err := messageUseCase.ListRoomMessages(ctx, roomID)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "room.html", baseData)
+		return
+	}
+	data := RoomTemplateData{
+		BaseTemplateData: baseData,
+		Room: room,
+		MessageList: messages.MessageList,
+		Participants: participants,
+	}
+	h.renderTemplate(w, "room.html", data)
+}

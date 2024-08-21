@@ -12,6 +12,7 @@ type Room struct {
 	TopicID     uint      `gorm:"index:idx_room_topic_id"`
 	Host        User      `gorm:"foreignKey:HostID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
 	Topic       Topic     `gorm:"foreignKey:TopicID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+	Since       string    `gorm:"-"`
 }
 
 type RoomParticipant struct {

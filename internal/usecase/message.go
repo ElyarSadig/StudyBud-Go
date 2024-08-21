@@ -86,3 +86,15 @@ func (u *MessageUseCase) ListUserMessages(ctx context.Context, userID string) (d
 	}
 	return messages, nil
 }
+
+func (u *MessageUseCase) ListRoomMessages(ctx context.Context, roomID string) (domain.Messages, error) {
+	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
+	messages, err := repo.ListRoomMessages(ctx, roomID)
+	if err != nil {
+		return domain.Messages{}, err
+	}
+	for i, message := range messages.MessageList {
+		messages.MessageList[i].Since = utils.FormatDuration(time.Since(message.Created))
+	}
+	return messages, nil
+}

@@ -57,3 +57,10 @@ type UserProfileTemplateData struct {
 	RoomCount   int64
 	MessageList []domain.Message
 }
+
+type RoomTemplateData struct {
+	BaseTemplateData
+	Room domain.Room
+	MessageList []domain.Message
+	Participants []domain.User
+}
