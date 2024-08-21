@@ -143,6 +143,7 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)
 	a.httpServer.AddHandler("get", "/home", apiHandler.HomePage)
 	a.httpServer.AddHandler("get", "/activity", apiHandler.ActivitiesPage)
+	a.httpServer.AddHandler("get", "/profile/{id}", apiHandler.UserProfilePage)
 	a.httpServer.AddHandler("get", "/login", apiHandler.RedirectIfAuthenticated(apiHandler.LoginPage))
 	a.httpServer.AddHandler("post", "/login", apiHandler.RedirectIfAuthenticated(apiHandler.LoginUser))
 	a.httpServer.AddHandler("get", "/register", apiHandler.RedirectIfAuthenticated(apiHandler.RegisterPage))
@@ -153,7 +154,6 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("post", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfile))
 	a.httpServer.AddHandler("get", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessagePage))
 	a.httpServer.AddHandler("post", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessage))
-
 }
 
 func api(path string) string {

@@ -128,3 +128,8 @@ func (u *UserUseCase) UpdateInfo(ctx context.Context, obj *domain.UpdateUser) (s
 	}
 	return u.setSession(ctx, newSessionValue)
 }
+
+func (u *UserUseCase) GetUserById(ctx context.Context, id string) (domain.User, error) {
+	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
+	return repo.GetUserById(ctx, id)
+}

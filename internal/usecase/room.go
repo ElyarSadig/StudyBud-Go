@@ -67,3 +67,15 @@ func (u *RoomUseCase) CreateRoom(ctx context.Context, form domain.RoomForm) erro
 	}
 	return roomRepo.CreateRoom(ctx, &room)
 }
+
+func (u *RoomUseCase) ListUserRooms(ctx context.Context, userID string) (domain.Rooms, error) {
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	rooms, err := repo.ListUserRooms(ctx, userID)
+	if err != nil {
+		return domain.Rooms{}, err
+	}
+	for i, room := range rooms.List {
+		rooms.List[i].Since = utils.FormatDuration(time.Since(room.Created))
+	}
+	return rooms, nil
+}

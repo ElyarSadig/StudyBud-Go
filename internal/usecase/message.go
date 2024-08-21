@@ -74,3 +74,15 @@ func (u *MessageUseCase) Delete(ctx context.Context, id string) error {
 	}
 	return repo.Delete(ctx, id)
 }
+
+func (u *MessageUseCase) ListUserMessages(ctx context.Context, userID string) (domain.Messages, error) {
+	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
+	messages, err := repo.ListUserMessages(ctx, userID)
+	if err != nil {
+		return domain.Messages{}, err
+	}
+	for i, message := range messages.MessageList {
+		messages.MessageList[i].Since = utils.FormatDuration(time.Since(message.Created))
+	}
+	return messages, nil
+}

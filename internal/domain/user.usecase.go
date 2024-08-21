@@ -10,4 +10,5 @@ type UserUseCase interface {
 	Login(ctx context.Context, form *UserLoginForm) (string, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	UpdateInfo(ctx context.Context, obj *UpdateUser) (string, error)
+	GetUserById(ctx context.Context, id string) (User, error)
 }

@@ -63,3 +63,13 @@ func (r *UserRepository) Update(ctx context.Context, user domain.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) GetUserById(ctx context.Context, id string) (domain.User, error) {
+	var tempUser domain.User
+	err := r.db.Model(&domain.User{}).WithContext(ctx).Where("id = ?", id).First(&tempUser).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.User{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return tempUser, nil
+}
