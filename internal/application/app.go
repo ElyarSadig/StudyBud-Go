@@ -123,7 +123,7 @@ func (a *Application) registerServiceLayers(ctx context.Context) error {
 
 	userUseCase := usecase.NewUser(a.error, a.sessionExpiration, a.redis, a.logger, userRepo)
 	topicUseCase := usecase.NewTopic(a.error, a.logger, topicRepo)
-	roomUseCase := usecase.NewRoom(a.error, a.logger, roomRepo)
+	roomUseCase := usecase.NewRoom(a.error, a.logger, roomRepo, topicRepo)
 	messageUseCase := usecase.NewMessage(a.error, a.logger, messageRepo)
 	apiHandler, err := delivery.NewApiHandler(ctx, int(a.sessionExpiration.Seconds()), a.aes, a.redis, a.error, a.logger, userUseCase, topicUseCase, roomUseCase, messageUseCase)
 	if err != nil {

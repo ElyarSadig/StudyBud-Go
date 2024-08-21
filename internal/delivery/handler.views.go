@@ -190,21 +190,26 @@ func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context()
-	// sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
-	// data := BaseTemplateData{
-	// 	AvatarURL:       sessionValue.Avatar,
-	// 	Username:        sessionValue.Username,
-	// 	IsAuthenticated: true,
-	// }
-	// useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
-	// err := useCase.CreateRoom(ctx, RoomForm, sessionValue.ID)
-	// if err != nil {
-	// 	data.Message = err.Error()
-	// 	h.renderTemplate(w, "room_form.html", data)
-	// 	return
-	// }
-	// http.Redirect(w, r, "/home", http.StatusFound)
+	ctx := r.Context()
+	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	data := BaseTemplateData{
+		AvatarURL:       sessionValue.Avatar,
+		Username:        sessionValue.Username,
+		IsAuthenticated: true,
+	}
+	roomForm := domain.RoomForm{
+		TopicName:   r.FormValue("topic"),
+		Name:        r.FormValue("name"),
+		Description: r.FormValue("description"),
+	}
+	useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	err := useCase.CreateRoom(ctx, roomForm)
+	if err != nil {
+		data.Message = err.Error()
+		h.renderTemplate(w, "room_form.html", data)
+		return
+	}
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 func (h *ApiHandler) UpdateProfilePage(w http.ResponseWriter, r *http.Request) {

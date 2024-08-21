@@ -32,3 +32,9 @@ type Rooms struct {
 	List  []RoomWithDetails
 	Count int64
 }
+
+type RoomForm struct {
+	TopicName   string
+	Name        string
+	Description string
+}

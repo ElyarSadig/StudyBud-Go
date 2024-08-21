@@ -69,3 +69,12 @@ func (r *TopicRepository) SearchTopicByName(ctx context.Context, name string) (d
 	}
 	return topics, nil
 }
+
+func (r *TopicRepository) CreateTopicIfNotExists(ctx context.Context, topic *domain.Topic) error {
+	err := r.db.WithContext(ctx).Where("name = ?", topic.Name).FirstOrCreate(topic).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return nil
+}

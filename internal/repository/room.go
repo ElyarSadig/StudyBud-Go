@@ -41,10 +41,20 @@ func (r *RoomRepository) ListAllRooms(ctx context.Context) (domain.Rooms, error)
 		Joins("LEFT JOIN room_participants ON room_participants.room_id = rooms.id").
 		Select("rooms.*, COUNT(room_participants.id) as participants_count").
 		Group("rooms.id").
+		Order("created DESC").
 		Find(&rooms.List).Error
 	if err != nil {
 		r.logger.Error(err.Error())
 		return domain.Rooms{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
 	return rooms, nil
+}
+
+func (r *RoomRepository) CreateRoom(ctx context.Context, room *domain.Room) error {
+	err := r.db.WithContext(ctx).Create(&room).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong")
+	}
+	return nil
 }

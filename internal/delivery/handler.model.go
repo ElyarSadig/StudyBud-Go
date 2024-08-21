@@ -24,16 +24,10 @@ type HomeTemplateData struct {
 	RequestUser domain.User
 }
 
-type RoomForm struct {
-	Topic       string
-	Name        string
-	Description string
-}
-
 type CreateRoomTemplateData struct {
 	BaseTemplateData
 	TopicList []domain.TopicWithDetails
-	Form      RoomForm
+	Form      domain.RoomForm
 }
 
 type UpdateProfileTemplateData struct {
