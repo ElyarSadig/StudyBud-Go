@@ -21,7 +21,7 @@
           </a>
           <h3>Study Room</h3>
         </div>
-        {{ if eq .Room.Host.ID .ID }}
+        {{ if eq .Room.Host.Username .Username }}
         <div class="room__topRight">
           <a href="/update-room/{{ .Room.ID }}">
             <svg
@@ -71,7 +71,7 @@
       <div class="room__box scroll">
         <div class="room__header scroll">
           <div class="room__info">
-            <h3>{{ Room.Name }}</h3>
+            <h3>{{ .Room.Name }}</h3>
             <span>{{ .Room.Since }} ago</span>
           </div>
           <div class="room__hosted">
@@ -98,7 +98,7 @@
                     </div>
                     <span>@{{ .User.Username }}</span>
                   </a>
-                  <span class="thread__date">{{ .Since }}ago</span>
+                  <span class="thread__date">{{ .Since }} ago</span>
                 </div>
                 {{ if eq $.Username .User.Username }}
                 <a href="/delete-message/{{ .ID }}">
@@ -136,7 +136,7 @@
     <!--   Start -->
     <div class="participants">
       <h3 class="participants__top">
-        Participants <span>({{ .Room.ParticipantsCount }} Joined)</span>
+        Participants <span>( Joined)</span>
       </h3>
       <div class="participants__list scroll">
         {{ range .Participants }}
@@ -155,5 +155,5 @@
     <!--  End -->
   </div>
 </main>
-<script src="/script.js"></script>
+<script src="/static/js/script.js"></script>
 {{ end }}

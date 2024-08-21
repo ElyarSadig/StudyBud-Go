@@ -79,3 +79,26 @@ func (u *RoomUseCase) ListUserRooms(ctx context.Context, userID string) (domain.
 	}
 	return rooms, nil
 }
+
+func (u *RoomUseCase) GetRoomById(ctx context.Context, roomID string) (domain.Room, error) {
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	room, err :=  repo.GetRoomById(ctx, roomID)
+	if err != nil {
+		return domain.Room{}, err
+	}
+	room.Since = utils.FormatDuration(time.Since(room.Created))
+	return room, nil
+}
+
+func (u *RoomUseCase) ListRoomParticipants(ctx context.Context, roomID string) ([]domain.User, error) {
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	participants, err := repo.ListRoomParticipants(ctx, roomID)
+	if err != nil {
+		return nil, err
+	}
+	users := make([]domain.User, 0, len(participants))
+	for _, participant := range participants {
+		users = append(users, participant.User)
+	}
+	return users, nil
+}

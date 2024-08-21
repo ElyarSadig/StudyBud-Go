@@ -74,3 +74,13 @@ func (r *MessageRepository) ListUserMessages(ctx context.Context, userID string)
 	}
 	return messages, nil
 }
+
+func (r *MessageRepository) ListRoomMessages(ctx context.Context, roomID string) (domain.Messages, error) {
+	var messages domain.Messages
+	err := r.db.WithContext(ctx).Model(&domain.Message{}).Preload("User").Where("room_id = ?", roomID).Find(&messages.MessageList).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return domain.Messages{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return messages, nil
+}
