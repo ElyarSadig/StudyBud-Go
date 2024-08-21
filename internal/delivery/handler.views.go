@@ -272,11 +272,11 @@ func (h *ApiHandler) DeleteMessagePage(w http.ResponseWriter, r *http.Request) {
 		h.renderTemplate(w, "not_found.html", baseData)
 		return
 	}
-	data := DeleteMessageForm{
+	data := DeleteForm{
 		BaseTemplateData: baseData,
-		MessageObj:       message.Body,
+		Obj:              message.Body,
 	}
-	h.renderTemplate(w, "delete_message.html", data)
+	h.renderTemplate(w, "delete.html", data)
 }
 
 func (h *ApiHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
@@ -285,7 +285,7 @@ func (h *ApiHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	err := useCase.Delete(ctx, id)
 	if err != nil {
-		h.renderTemplate(w, "delete_message.html", BaseTemplateData{Message: err.Error()})
+		h.renderTemplate(w, "delete.html", BaseTemplateData{Message: err.Error()})
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
@@ -393,9 +393,35 @@ func (h *ApiHandler) RoomPage(w http.ResponseWriter, r *http.Request) {
 	}
 	data := RoomTemplateData{
 		BaseTemplateData: baseData,
-		Room: room,
-		MessageList: messages.MessageList,
-		Participants: participants,
+		Room:             room,
+		MessageList:      messages.MessageList,
+		Participants:     participants,
 	}
 	h.renderTemplate(w, "room.html", data)
+}
+
+func (h *ApiHandler) DeleteRoomPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	request := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	baseData := BaseTemplateData{
+		IsAuthenticated: true,
+		AvatarURL:       request.Avatar,
+		Username:        request.Username,
+	}
+	usecase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	roomID := chi.URLParam(r, "id")
+	room, err := usecase.GetUserRoom(ctx, roomID)
+	if err != nil {
+		h.renderTemplate(w, "not_found.html", baseData)
+		return
+	}
+	data := DeleteForm{
+		BaseTemplateData: baseData,
+		Obj: room.Name,
+	}
+	h.renderTemplate(w, "delete.html", data)
+}
+
+func (h *ApiHandler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
+
 }
