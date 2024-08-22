@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
@@ -83,7 +84,7 @@ func (u *RoomUseCase) ListUserRooms(ctx context.Context, userID string) (domain.
 
 func (u *RoomUseCase) GetRoomById(ctx context.Context, roomID string) (domain.Room, error) {
 	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
-	room, err :=  repo.GetRoomById(ctx, roomID)
+	room, err := repo.GetRoomById(ctx, roomID)
 	if err != nil {
 		return domain.Room{}, err
 	}
@@ -115,4 +116,11 @@ func (u *RoomUseCase) GetUserRoom(ctx context.Context, roomID string) (domain.Ro
 		return domain.Room{}, u.errHandler.New(http.StatusForbidden, "forbidden!")
 	}
 	return room, nil
+}
+
+func (u *RoomUseCase) DeleteUserRoom(ctx context.Context, roomID string) error {
+	sv := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	hostID := strconv.Itoa(sv.ID)
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	return repo.DeleteUserRoom(ctx, roomID, hostID)
 }

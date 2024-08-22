@@ -10,4 +10,5 @@ type RoomUseCase interface {
 	GetRoomById(ctx context.Context, roomID string) (Room, error)
 	ListRoomParticipants(ctx context.Context, roomID string) ([]User, error)
 	GetUserRoom(ctx context.Context, roomID string) (Room, error)
+	DeleteUserRoom(ctx context.Context, roomID string) error
 }

@@ -423,5 +423,14 @@ func (h *ApiHandler) DeleteRoomPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
-
+	ctx := r.Context()
+	roomID := chi.URLParam(r, "id")
+	useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	err := useCase.DeleteUserRoom(ctx, roomID)
+	if err != nil {
+		data := BaseTemplateData{Message: err.Error()}
+		h.renderTemplate(w, "delete.html", data)
+		return
+	}
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
