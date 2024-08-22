@@ -102,3 +102,12 @@ func (r *RoomRepository) ListRoomParticipants(ctx context.Context, roomID string
 	}
 	return users, nil
 }
+
+func (r *RoomRepository) DeleteUserRoom(ctx context.Context, roomID, hostID string) error {
+	err := r.db.WithContext(ctx).Model(&domain.Room{}).Where("id = ? AND host_id = ?", roomID, hostID).Delete(nil).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong")
+	}
+	return nil
+}
