@@ -10,8 +10,8 @@ type Room struct {
 	Created     time.Time `gorm:"type:timestamp with time zone;not null;autoCreateTime"`
 	HostID      uint      `gorm:"index:idx_room_host_id"`
 	TopicID     uint      `gorm:"index:idx_room_topic_id"`
-	Host        User      `gorm:"foreignKey:HostID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
-	Topic       Topic     `gorm:"foreignKey:TopicID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+	Host        User      `gorm:"foreignKey:HostID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
+	Topic       Topic     `gorm:"foreignKey:TopicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
 	Since       string    `gorm:"-"`
 }
 

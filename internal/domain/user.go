@@ -23,16 +23,16 @@ type UserGroup struct {
 	ID      uint      `gorm:"primaryKey"`
 	UserID  uint      `gorm:"not null;index:idx_user_groups_user_id"`
 	GroupID uint      `gorm:"not null;index:idx_user_groups_group_id"`
-	User    User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
-	Group   AuthGroup `gorm:"foreignKey:GroupID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+	User    User      `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
+	Group   AuthGroup `gorm:"foreignKey:GroupID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
 }
 
 type UserPermission struct {
 	ID           uint           `gorm:"primaryKey"`
 	UserID       uint           `gorm:"not null;index:idx_user_permissions_user_id"`
 	PermissionID uint           `gorm:"not null;index:idx_user_permissions_permission_id"`
-	User         User           `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
-	Permission   AuthPermission `gorm:"foreignKey:PermissionID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+	User         User           `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
+	Permission   AuthPermission `gorm:"foreignKey:PermissionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
 }
 
 type SessionValue struct {
