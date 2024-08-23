@@ -7,7 +7,7 @@ type User struct {
 	Password    string    `gorm:"type:varchar(128);not null"`
 	LastLogin   time.Time `gorm:"type:timestamp with time zone"`
 	IsSuperuser bool      `gorm:"type:boolean;not null"`
-	Username    string    `gorm:"type:varchar(150);not null;unique"`
+	Username    string    `gorm:"type:varchar(150);not null"`
 	FirstName   string    `gorm:"type:varchar(150)"`
 	LastName    string    `gorm:"type:varchar(150)"`
 	Email       string    `gorm:"type:varchar(254);unique"`
