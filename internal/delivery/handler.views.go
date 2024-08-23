@@ -90,7 +90,7 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.setCookie(w, sessionKey)
-	http.Redirect(w, r, "/home", http.StatusFound)
+	http.Redirect(w, r, "/user-update", http.StatusFound)
 }
 
 func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {

@@ -39,7 +39,6 @@ type Application struct {
 	serviceConfig     *confighandler.Config[configs.ExtraData]
 	healthCheck       *health.Health
 	serviceInfo       *configs.ServiceInfo
-	sessionPrivateKey string
 	sessionExpiration time.Duration
 	aes               *encryption.AES[string]
 }
@@ -136,9 +135,10 @@ func (a *Application) registerServiceLayers(ctx context.Context) error {
 
 func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	if a.serviceConfig.ExtraData.HealthCheck {
-		a.httpServer.AddHandler("get", api("health"), a.healthCheck.HandlerFunc)
+		a.httpServer.AddHandler("get", "/health", a.healthCheck.HandlerFunc)
 	}
 	a.httpServer.ServeStaticFiles("web/static")
+	a.httpServer.AddHandler("get", "/", apiHandler.HomePage)
 	a.httpServer.AddHandler("get", "/logout", apiHandler.Logout)
 	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)
 	a.httpServer.AddHandler("get", "/home", apiHandler.HomePage)
@@ -160,11 +160,6 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("post", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessage))
 	a.httpServer.AddHandler("get", "/delete-room/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteRoomPage))
 	a.httpServer.AddHandler("post", "/delete-room/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteRoom))
-}
-
-func api(path string) string {
-	out := fmt.Sprintf("%s/%s", ApiVersion, path)
-	return out
 }
 
 func healthChecker(name, version, code string) *health.Health {

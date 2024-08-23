@@ -55,7 +55,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	serviceInfo, err := loadServiceAccessControl("./configs/service_info.yaml")
+	serviceInfo, err := loadServiceAccessControl()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,12 +176,11 @@ func initLogging(cfg *confighandler.Config[configs.ExtraData]) (logger.Logger, e
 	return logger, nil
 }
 
-func loadServiceAccessControl(servicePermissionPath string) (*configs.ServiceInfo, error) {
+func loadServiceAccessControl() (*configs.ServiceInfo, error) {
 	cfg := new(configs.ServiceInfo)
-	unmarshal, err := unmarshaller.NewUnmarshaller(servicePermissionPath)
-	if err != nil {
-		return nil, err
+	unmarshaller := &unmarshaller.YamlUnmarshaller{
+		Data: configs.ServiceInfoYAML,
 	}
 
-	return cfg, unmarshal.Unmarshal(cfg)
+	return cfg, unmarshaller.Unmarshal(cfg)
 }
