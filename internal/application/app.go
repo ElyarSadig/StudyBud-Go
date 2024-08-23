@@ -152,6 +152,8 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	a.httpServer.AddHandler("post", "/register", apiHandler.RedirectIfAuthenticated(apiHandler.RegisterUser))
 	a.httpServer.AddHandler("get", "/create-room", apiHandler.ProtectedHandler(apiHandler.CreateRoomPage))
 	a.httpServer.AddHandler("post", "/create-room", apiHandler.ProtectedHandler(apiHandler.CreateRoom))
+	a.httpServer.AddHandler("get", "/update-room/{id}", apiHandler.ProtectedHandler(apiHandler.UpdateRoomPage))
+	a.httpServer.AddHandler("post", "/update-room/{id}", apiHandler.ProtectedHandler(apiHandler.UpdateRoom))
 	a.httpServer.AddHandler("get", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfilePage))
 	a.httpServer.AddHandler("post", "/user-update", apiHandler.ProtectedHandler(apiHandler.UpdateProfile))
 	a.httpServer.AddHandler("get", "/delete-message/{id}", apiHandler.ProtectedHandler(apiHandler.DeleteMessagePage))

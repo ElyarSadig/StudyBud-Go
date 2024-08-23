@@ -452,3 +452,42 @@ func (h *ApiHandler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
 }
+
+func (h *ApiHandler) UpdateRoomPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sv := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	baseData := BaseTemplateData{
+		IsAuthenticated: true,
+		AvatarURL:       sv.Avatar,
+		Username:        sv.Username,
+	}
+	roomID := chi.URLParam(r, "id")
+	roomUsecase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	topicUsecase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
+	data := UpdateRoomTemplateData{
+		BaseTemplateData: baseData,
+	}
+	room, err := roomUsecase.GetUserRoom(ctx, roomID)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "room_form.html", baseData)
+		return
+	}
+	topics, err := topicUsecase.ListAllTopics(ctx)
+	if err != nil {
+		baseData.Message = err.Error()
+		h.renderTemplate(w, "room_form.html", baseData)
+		return
+	}
+	data.TopicList = topics.List
+	data.Form = domain.RoomForm{
+		TopicName:   room.Topic.Name,
+		Name:        room.Name,
+		Description: room.Description,
+	}
+	h.renderTemplate(w, "room_form.html", data)
+}
+
+func (h *ApiHandler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
+
+}

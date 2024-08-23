@@ -29,6 +29,12 @@ type CreateRoomTemplateData struct {
 	Form      domain.RoomForm
 }
 
+type UpdateRoomTemplateData struct {
+	BaseTemplateData
+	TopicList []domain.TopicWithDetails
+	Form      domain.RoomForm
+}
+
 type UpdateProfileTemplateData struct {
 	BaseTemplateData
 	Avatar   string
@@ -60,7 +66,7 @@ type UserProfileTemplateData struct {
 
 type RoomTemplateData struct {
 	BaseTemplateData
-	Room domain.Room
-	MessageList []domain.Message
+	Room         domain.Room
+	MessageList  []domain.Message
 	Participants []domain.User
 }
