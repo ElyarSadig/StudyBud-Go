@@ -124,3 +124,21 @@ func (u *RoomUseCase) DeleteUserRoom(ctx context.Context, roomID string) error {
 	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
 	return repo.DeleteUserRoom(ctx, roomID, hostID)
 }
+
+func (u *RoomUseCase) UpdateRoom(ctx context.Context, id string, roomForm domain.RoomForm) error {
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	topicRepo := domain.Bridge[domain.TopicRepository](configs.TOPICS_DB_NAME, u.repositories)
+	room, err := repo.GetRoomById(ctx, id)
+	if err != nil {
+		return err
+	}
+	topic := &domain.Topic{Name: roomForm.TopicName}
+	err = topicRepo.CreateTopicIfNotExists(ctx, topic)
+	if err != nil {
+		return err
+	}
+	room.TopicID = topic.ID
+	room.Name = roomForm.Name
+	room.Description = roomForm.Description
+	return repo.UpdateRoom(ctx, room)
+}

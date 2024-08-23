@@ -111,3 +111,12 @@ func (r *RoomRepository) DeleteUserRoom(ctx context.Context, roomID, hostID stri
 	}
 	return nil
 }
+
+func (r *RoomRepository) UpdateRoom(ctx context.Context, room domain.Room) error {
+	err := r.db.Model(&room).WithContext(ctx).Updates(domain.Room{Name: room.Name, TopicID: room.TopicID, Description: room.Description}).Error
+	if err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return nil
+}
