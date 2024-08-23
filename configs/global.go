@@ -1,8 +1,15 @@
 package configs
 
+import (
+	_ "embed"
+)
+
 type CtxKey string
 
 const UserCtxKey CtxKey = "user"
+
+//go:embed service_info.yaml
+var ServiceInfoYAML []byte
 
 const (
 	DefaultAvatar                  = "/static/images/avatar.svg"
