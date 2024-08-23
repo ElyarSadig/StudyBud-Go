@@ -10,5 +10,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates tzdata curl
 RUN mkdir /app
 COPY --from=builder /app/main /app
+COPY ./configs/config-stage.yaml  /configs/config-stage.yaml
 EXPOSE 8080
-CMD ["/app/main"]
+CMD ["/app/main", "-c", "/configs/config-stage.yaml", "-migrate", "-seed"]
