@@ -98,3 +98,10 @@ func (u *MessageUseCase) ListRoomMessages(ctx context.Context, roomID string) (d
 	}
 	return messages, nil
 }
+
+func (u *MessageUseCase) CreateMessage(ctx context.Context, message *domain.Message) error {
+	sv := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	message.UserID = uint(sv.ID)
+	repo := domain.Bridge[domain.MessageRepository](configs.MESSAGES_DB_NAME, u.repositories)
+	return repo.CreateMessage(ctx, message)
+}

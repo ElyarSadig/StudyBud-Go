@@ -110,13 +110,6 @@ func (u *UserUseCase) UpdateInfo(ctx context.Context, obj *domain.UpdateUser) (s
 		Bio:      obj.Bio,
 		Name:     obj.Name,
 	}
-	newSessionValue := domain.SessionValue{
-		ID:       oldSession.ID,
-		Username: obj.Username,
-		Name:     obj.Name,
-		Email:    oldSession.Email,
-		Avatar:   obj.Avatar,
-	}
 	err := u.redis.Remove(ctx, "session", oldSession.SessionKey)
 	if err != nil {
 		u.logger.Error(err.Error())
@@ -125,6 +118,17 @@ func (u *UserUseCase) UpdateInfo(ctx context.Context, obj *domain.UpdateUser) (s
 	err = repo.Update(ctx, user)
 	if err != nil {
 		return "", err
+	}
+	updateUser, err := repo.GetUserByEmail(ctx, oldSession.Email)
+	if err != nil {
+		return "", err
+	}
+	newSessionValue := domain.SessionValue{
+		ID:       int(updateUser.ID),
+		Username: updateUser.Username,
+		Name:     updateUser.Name,
+		Email:    updateUser.Email,
+		Avatar:   updateUser.Avatar,
 	}
 	return u.setSession(ctx, newSessionValue)
 }

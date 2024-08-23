@@ -82,7 +82,6 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Println("Successfully seeded the database")
-		return
 	}
 
 	router := transport.NewHTTPServer(cfg.HttpAddress, logger)
