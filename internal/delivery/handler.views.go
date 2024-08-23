@@ -489,5 +489,18 @@ func (h *ApiHandler) UpdateRoomPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApiHandler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
-
+	ctx := r.Context()
+	roomID := chi.URLParam(r, "id")
+	useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
+	roomForm := domain.RoomForm{
+		Name:        r.FormValue("name"),
+		TopicName:   r.FormValue("topic"),
+		Description: r.FormValue("description"),
+	}
+	err := useCase.UpdateRoom(ctx, roomID, roomForm)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/home", http.StatusFound)
 }

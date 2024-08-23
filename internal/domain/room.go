@@ -19,8 +19,8 @@ type RoomParticipant struct {
 	ID     uint `gorm:"primaryKey"`
 	RoomID uint `gorm:"not null;index:idx_room_participants_room_id"`
 	UserID uint `gorm:"not null;index:idx_room_participants_user_id"`
-	Room   Room `gorm:"foreignKey:RoomID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
-	User   User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;deferrable:InitiallyDeferred"`
+	Room   Room `gorm:"foreignKey:RoomID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
+	User   User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;deferrable:InitiallyDeferred"`
 }
 
 type RoomWithDetails struct {
