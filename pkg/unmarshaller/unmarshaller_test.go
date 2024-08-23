@@ -27,7 +27,7 @@ bar: 123
 `)
 
 	config := &MyConfig{}
-	unmarshaller := &yamlUnmarshaller{Data: yamlData}
+	unmarshaller := &YamlUnmarshaller{Data: yamlData}
 
 	err := unmarshaller.Unmarshal(config)
 	if err != nil {
@@ -53,7 +53,7 @@ func TestTomlUnmarshaller_Unmarshal(t *testing.T) {
 	`)
 
 	config := &Person{}
-	unmarshaller := &tomlUnmarshaller{Data: tomlData}
+	unmarshaller := &TomlUnmarshaller{Data: tomlData}
 
 	err := unmarshaller.Unmarshal(config)
 	if err != nil {
@@ -84,7 +84,7 @@ func TestJSONUnmarshaller_Unmarshal(t *testing.T) {
 	}
 
 	config := &MyConfig{}
-	unmarshaller := &jsonUnmarshaller{Data: jsonData}
+	unmarshaller := &JsonUnmarshaller{Data: jsonData}
 
 	err := unmarshaller.Unmarshal(config)
 	if err != nil {
@@ -101,7 +101,7 @@ func TestCreateUnmarshaller(t *testing.T) {
 
 		unmarshaller, err := NewUnmarshaller(path)
 		assert.NoError(t, err)
-		assert.IsType(t, &jsonUnmarshaller{}, unmarshaller)
+		assert.IsType(t, &JsonUnmarshaller{}, unmarshaller)
 	})
 
 	t.Run("TOML extension", func(t *testing.T) {
@@ -109,7 +109,7 @@ func TestCreateUnmarshaller(t *testing.T) {
 
 		unmarshaller, err := NewUnmarshaller(path)
 		assert.NoError(t, err)
-		assert.IsType(t, &tomlUnmarshaller{}, unmarshaller)
+		assert.IsType(t, &TomlUnmarshaller{}, unmarshaller)
 	})
 
 	t.Run("YAML extension", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestCreateUnmarshaller(t *testing.T) {
 
 		unmarshaller, err := NewUnmarshaller(path)
 		assert.NoError(t, err)
-		assert.IsType(t, &yamlUnmarshaller{}, unmarshaller)
+		assert.IsType(t, &YamlUnmarshaller{}, unmarshaller)
 	})
 
 	t.Run("Unsupported extension", func(t *testing.T) {
