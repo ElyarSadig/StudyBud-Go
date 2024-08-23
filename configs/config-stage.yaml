@@ -1,0 +1,38 @@
+development: false
+from_env_file: false
+test_mode: false
+http_address: "0.0.0.0:8080"
+database:
+  name: "studybud_db"
+  host: "dbHost"
+  port: "5432"
+redis:
+  dial_retry: 12
+  max_conn: 10
+  idle_conn: 5
+  address: "redisHost"
+  port: "6379"
+  db: 0
+  max_retries: 0
+  min_retries_backoff: 8ms
+  max_retries_backoff: 512ms
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  pool_size: 10
+  min_idle_conns: 0
+  max_conn_age: 0s
+  pool_timeout: 4s
+  idle_timeout: 5m
+  ping_timeout: 3m
+  sentinel:
+    master_name: "master_redis_"
+    enabled: false
+    addresses:
+      - "127.0.0.1:26379"
+      - "127.0.0.1:36379"
+      - "127.0.0.1:46379"
+extra_data:
+  health_check: true
+  session_expire_duration: 5 #minutes
+  max_attempt_login_times: 3
