@@ -79,7 +79,7 @@ func (u *UserUseCase) Login(ctx context.Context, form *domain.UserLoginForm) (st
 	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
 	user, err := repo.GetUserByEmail(ctx, form.Email)
 	if err != nil {
-		return "", err
+		return "", u.errHandler.New(http.StatusBadRequest, "invalid credentials try again!")
 	}
 	ok := bcrypt.CheckPasswordHash(form.Password, user.Password)
 	if !ok {
