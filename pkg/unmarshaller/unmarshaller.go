@@ -23,33 +23,33 @@ type Unmarshaller interface {
 	Unmarshal(config interface{}) error
 }
 
-type jsonUnmarshaller struct {
+type JsonUnmarshaller struct {
 	Data []byte
 }
 
-type tomlUnmarshaller struct {
+type TomlUnmarshaller struct {
 	Data []byte
 }
 
-type yamlUnmarshaller struct {
+type YamlUnmarshaller struct {
 	Data []byte
 }
 
-func (y *yamlUnmarshaller) Unmarshal(config interface{}) error {
+func (y *YamlUnmarshaller) Unmarshal(config interface{}) error {
 	if err := yaml.Unmarshal(y.Data, config); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (j *jsonUnmarshaller) Unmarshal(config interface{}) error {
+func (j *JsonUnmarshaller) Unmarshal(config interface{}) error {
 	if err := json.Unmarshal(j.Data, config); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (t *tomlUnmarshaller) Unmarshal(config interface{}) error {
+func (t *TomlUnmarshaller) Unmarshal(config interface{}) error {
 	if err := toml.Unmarshal(t.Data, config); err != nil {
 		return err
 	}
@@ -65,15 +65,15 @@ func NewUnmarshaller(path string) (Unmarshaller, error) {
 	}
 	switch Extension(ext) {
 	case JSON:
-		return &jsonUnmarshaller{
+		return &JsonUnmarshaller{
 			Data: payload,
 		}, nil
 	case TOML:
-		return &tomlUnmarshaller{
+		return &TomlUnmarshaller{
 			Data: payload,
 		}, nil
 	case YAML, YML:
-		return &yamlUnmarshaller{
+		return &YamlUnmarshaller{
 			Data: payload,
 		}, nil
 	default:
