@@ -144,21 +144,28 @@ func (h *ApiHandler) extractSessionFromCookie(r *http.Request) (domain.SessionVa
 }
 
 func (h *ApiHandler) extractUserProfileUpdateForm(r *http.Request) (domain.UpdateUser, error) {
-	err := r.ParseMultipartForm(10 << 20) // 10 MB max memory
+	var err error
+	err = r.ParseMultipartForm(10 << 20) // 10 MB max memory
 	if err != nil {
 		return domain.UpdateUser{}, err
 	}
 	name := r.FormValue("name")
 	username := r.FormValue("username")
 	bio := r.FormValue("bio")
-	file, handler, err := r.FormFile("avatar")
-	if err != nil {
-		return domain.UpdateUser{}, err
-	}
-	defer file.Close()
-	avatarPath, err := h.saveFileToServer(file, handler)
-	if err != nil {
-		return domain.UpdateUser{}, err
+	var file multipart.File
+	var handler *multipart.FileHeader
+	var avatarPath string 
+	files := r.MultipartForm.File["avatar"]
+	if len(files) != 0 {
+		file, handler, err = r.FormFile("avatar")
+		if err != nil {
+			return domain.UpdateUser{}, err
+		}
+		defer file.Close()
+		avatarPath, err = h.saveFileToServer(file, handler)
+		if err != nil {
+			return domain.UpdateUser{}, err
+		}
 	}
 	user := domain.UpdateUser{
 		Name:     name,
