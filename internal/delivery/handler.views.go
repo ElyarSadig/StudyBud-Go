@@ -3,6 +3,7 @@ package delivery
 import (
 	"encoding/base64"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/elyarsadig/studybud-go/configs"
@@ -89,6 +90,7 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.setCookie(w, sessionKey)
+	http.Redirect(w, r, "/home", http.StatusFound)
 }
 
 func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
@@ -400,6 +402,22 @@ func (h *ApiHandler) RoomPage(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "room.html", data)
 }
 
+func (h *ApiHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	roomID, _ := strconv.Atoi(id)
+	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
+	body := r.FormValue("body")
+	message := &domain.Message{RoomID: uint(roomID), Body: body}
+	err := useCase.CreateMessage(ctx, message)
+	if err != nil {
+		data := BaseTemplateData{Message: err.Error()}
+		h.renderTemplate(w, "room.html", data)
+		return
+	}
+	http.Redirect(w, r, "/room/"+id, http.StatusFound)
+}
+
 func (h *ApiHandler) DeleteRoomPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	request := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
@@ -417,7 +435,7 @@ func (h *ApiHandler) DeleteRoomPage(w http.ResponseWriter, r *http.Request) {
 	}
 	data := DeleteForm{
 		BaseTemplateData: baseData,
-		Obj: room.Name,
+		Obj:              room.Name,
 	}
 	h.renderTemplate(w, "delete.html", data)
 }

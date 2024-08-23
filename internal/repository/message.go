@@ -84,3 +84,31 @@ func (r *MessageRepository) ListRoomMessages(ctx context.Context, roomID string)
 	}
 	return messages, nil
 }
+
+func (r *MessageRepository) CreateMessage(ctx context.Context, message *domain.Message) error {
+	tx := r.db.WithContext(ctx).Begin()
+
+	if err := tx.Create(message).Error; err != nil {
+		tx.Rollback()
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+
+	roomParticipant := &domain.RoomParticipant{
+		RoomID: message.RoomID,
+		UserID: message.UserID,
+	}
+
+	if err := tx.Where(roomParticipant).FirstOrCreate(roomParticipant).Error; err != nil {
+		tx.Rollback()
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		r.logger.Error(err.Error())
+		return r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+
+	return nil
+}
