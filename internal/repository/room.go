@@ -120,3 +120,21 @@ func (r *RoomRepository) UpdateRoom(ctx context.Context, room domain.Room) error
 	}
 	return nil
 }
+
+func (r *RoomRepository) SearchRoom(ctx context.Context, searchQuery string) (domain.Rooms, error) {
+	rooms := domain.Rooms{}
+	query := r.db.WithContext(ctx).
+		Model(&domain.Room{}).
+		Select("rooms.*, topics.name as topic_name, users.name as host_name").
+		Joins("JOIN topics ON topics.id = rooms.topic_id").
+		Joins("JOIN users ON users.id = rooms.host_id").
+		Where("rooms.name ILIKE ? OR topics.name ILIKE ?", "%"+searchQuery+"%", "%"+searchQuery+"%").
+		Preload("Host").
+		Preload("Topic")
+	result := query.Find(&rooms.List).Count(&rooms.Count)
+	if result.Error != nil {
+		r.logger.Error(result.Error.Error())
+		return domain.Rooms{}, r.errHandler.New(http.StatusInternalServerError, "something went wrong!")
+	}
+	return rooms, nil
+}

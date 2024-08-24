@@ -10,5 +10,6 @@ type RoomRepository interface {
 	ListUserRooms(ctx context.Context, userID string) (Rooms, error)
 	GetRoomById(ctx context.Context, roomID string) (Room, error)
 	ListRoomParticipants(ctx context.Context, roomID string) ([]RoomParticipant, error)
+	SearchRoom(ctx context.Context, searchQuery string) (Rooms, error)
 	DeleteUserRoom(ctx context.Context, roomID, hostID string) error
 }

@@ -4,7 +4,7 @@ import "time"
 
 type Room struct {
 	ID          uint      `gorm:"primaryKey"`
-	Name        string    `gorm:"type:varchar(200);not null"`
+	Name        string    `gorm:"type:varchar(200);not null;index:idx_room_name"`
 	Description string    `gorm:"type:text"`
 	Updated     time.Time `gorm:"type:timestamp with time zone;not null;autoUpdateTime"`
 	Created     time.Time `gorm:"type:timestamp with time zone;not null;autoCreateTime"`

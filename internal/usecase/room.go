@@ -40,11 +40,20 @@ func NewRoom(errHandler errorHandler.Handler, logger logger.Logger, repositories
 
 func (u *RoomUseCase) None() {}
 
-func (u *RoomUseCase) ListAllRooms(ctx context.Context) (domain.Rooms, error) {
+func (u *RoomUseCase) ListRooms(ctx context.Context, searchQuery string) (domain.Rooms, error) {
 	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
-	rooms, err := repo.ListAllRooms(ctx)
-	if err != nil {
-		return domain.Rooms{}, err
+	rooms := domain.Rooms{}
+	var err error
+	if len(searchQuery) == 0 {
+		rooms, err = repo.ListAllRooms(ctx)
+		if err != nil {
+			return domain.Rooms{}, err
+		}
+	} else {
+		rooms, err = repo.SearchRoom(ctx, searchQuery)
+		if err != nil {
+			return domain.Rooms{}, err
+		}
 	}
 	for i, room := range rooms.List {
 		rooms.List[i].Since = utils.FormatDuration(time.Since(room.Created))
@@ -141,4 +150,9 @@ func (u *RoomUseCase) UpdateRoom(ctx context.Context, id string, roomForm domain
 	room.Name = roomForm.Name
 	room.Description = roomForm.Description
 	return repo.UpdateRoom(ctx, room)
+}
+
+func (u *RoomUseCase) SearchRoom(ctx context.Context, searchQuery string) (domain.Rooms, error) {
+	repo := domain.Bridge[domain.RoomRepository](configs.ROOMS_DB_NAME, u.repositories)
+	return repo.SearchRoom(ctx, searchQuery)
 }
