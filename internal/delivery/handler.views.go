@@ -140,6 +140,8 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 			AvatarURL:       sessionValue.Avatar,
 		},
 	}
+	queryParams := r.URL.Query()
+	searchQuery := queryParams.Get("q")
 	ctx := r.Context()
 	topicUseCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
 	roomUseCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
@@ -152,7 +154,7 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 	data.TopicList = topics.List
 	data.TopicsCount = topics.Count
-	rooms, err := roomUseCase.ListAllRooms(ctx)
+	rooms, err := roomUseCase.ListRooms(ctx, searchQuery)
 	if err != nil {
 		data.Message = err.Error()
 		h.renderTemplate(w, "home.html", data)
