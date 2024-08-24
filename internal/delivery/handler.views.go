@@ -232,7 +232,7 @@ func (h *ApiHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.UpdateInfo(ctx, &updateUser)
 	if err != nil {
-		h.handleError(w, err, "update_user.html",  BaseTemplateData{})
+		h.handleError(w, err, "update_user.html", BaseTemplateData{})
 		return
 	}
 	h.setCookie(w, sessionKey)
