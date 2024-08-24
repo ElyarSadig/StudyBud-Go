@@ -14,7 +14,7 @@ type HTTPTransporter interface {
 	Notify() <-chan error
 	Shutdown(ctx context.Context) error
 	AddHandler(httpMethod HttpMethod, path string, f func(w http.ResponseWriter, r *http.Request))
-	ServeStaticFiles(webDir string)
+	ServeStaticFiles(filePath, prefix, webDir string)
 }
 
 type HttpServer struct {
@@ -72,8 +72,8 @@ func (s *HttpServer) AddHandler(httpMethod HttpMethod, path string, f func(w htt
 	}
 }
 
-func (s *HttpServer) ServeStaticFiles(webDir string) {
-	s.router.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(webDir))))
+func (s *HttpServer) ServeStaticFiles(filePath, prefix, webDir string) {
+	s.router.Handle(filePath, http.StripPrefix(prefix, http.FileServer(http.Dir(webDir))))
 }
 
 // func PanicRecoverer(h http.Handler, logging logger.Logger) http.Handler {

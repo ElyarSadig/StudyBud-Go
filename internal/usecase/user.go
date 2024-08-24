@@ -49,7 +49,7 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegiste
 	}
 	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
 	_, err = repo.GetUserByEmail(ctx, form.Email)
-	if err != nil {
+	if err == nil {
 		return "", u.errHandler.New(http.StatusConflict, "email already in use")
 	}
 	hashedPassword, err := bcrypt.HashPassword(form.Password1)

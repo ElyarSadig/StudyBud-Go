@@ -137,7 +137,8 @@ func (a *Application) registerAPIHandler(apiHandler *delivery.ApiHandler) {
 	if a.serviceConfig.ExtraData.HealthCheck {
 		a.httpServer.AddHandler("get", "/health", a.healthCheck.HandlerFunc)
 	}
-	a.httpServer.ServeStaticFiles("web/static")
+	a.httpServer.ServeStaticFiles("/static/*", "/static/", "web/static")
+	a.httpServer.ServeStaticFiles("/uploads/*", "/uploads/", "uploads")
 	a.httpServer.AddHandler("get", "/", apiHandler.HomePage)
 	a.httpServer.AddHandler("get", "/logout", apiHandler.Logout)
 	a.httpServer.AddHandler("get", "/topics", apiHandler.Topics)

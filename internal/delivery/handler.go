@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
+	studybudgo "github.com/elyarsadig/studybud-go"
 	"github.com/elyarsadig/studybud-go/configs"
 	"github.com/elyarsadig/studybud-go/internal/domain"
 	"github.com/elyarsadig/studybud-go/pkg/encryption"
@@ -58,16 +59,16 @@ func NewApiHandler(ctx context.Context, cookieExpiration int, aes *encryption.AE
 }
 
 func (h *ApiHandler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
-	tmplPaths := []string{
-		filepath.Join("web", "main.html"),
-		filepath.Join("web", "navbar.html"),
-		filepath.Join("web", "activity_component.html"),
-		filepath.Join("web", "feed_component.html"),
-		filepath.Join("web", "topics_component.html"),
-		filepath.Join("web", tmpl),
+	tmplFiles := []string{
+		"web/main.html",
+		"web/navbar.html",
+		"web/activity_component.html",
+		"web/feed_component.html",
+		"web/topics_component.html",
+		"web/" + tmpl,
 	}
 
-	tmplParsed, err := template.ParseFiles(tmplPaths...)
+	tmplParsed, err := template.ParseFS(studybudgo.TemplatesFS, tmplFiles...)
 	if err != nil {
 		h.logger.Error(err.Error())
 		return
@@ -177,7 +178,10 @@ func (h *ApiHandler) extractUserProfileUpdateForm(r *http.Request) (domain.Updat
 }
 
 func (h *ApiHandler) saveFileToServer(file multipart.File, handler *multipart.FileHeader) (string, error) {
-	uploadDir := "./web/static/uploads"
+	uploadDir := "./uploads"
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		return "", fmt.Errorf("failed to create upload directory: %w", err)
+	}
 	ext := filepath.Ext(handler.Filename)
 	filename := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 	filePath := filepath.Join(uploadDir, filename)
@@ -190,7 +194,7 @@ func (h *ApiHandler) saveFileToServer(file multipart.File, handler *multipart.Fi
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("/static/uploads/%s", filename), nil
+	return fmt.Sprintf("/uploads/%s", filename), nil
 }
 
 func (h *ApiHandler) handleError(w http.ResponseWriter, err error, tmpl string, data BaseTemplateData) {
