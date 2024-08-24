@@ -28,10 +28,6 @@ func (r *UserRepository) None() {}
 
 func (r *UserRepository) Create(ctx context.Context, obj *domain.User) (domain.User, error) {
 	var tempUser domain.User
-	r.db.WithContext(ctx).Where("username = ?", obj.Username).Find(&tempUser)
-	if tempUser.Username != "" {
-		return domain.User{}, r.errHandler.New(http.StatusConflict, "username already in use")
-	}
 	r.db.WithContext(ctx).Where("email = ?", obj.Email).Find(&tempUser)
 	if tempUser.Email != "" {
 		return domain.User{}, r.errHandler.New(http.StatusConflict, "email already in use")
