@@ -45,13 +45,17 @@ func (u *UserUseCase) None() {}
 func (u *UserUseCase) RegisterUser(ctx context.Context, form *domain.UserRegisterForm) (string, error) {
 	err := u.validateUserRegisterForm(form)
 	if err != nil {
-		return "", err
+		return "", u.errHandler.New(http.StatusBadRequest, err.Error())
 	}
 	repo := domain.Bridge[domain.UserRepository](configs.USERS_DB_NAME, u.repositories)
+	_, err = repo.GetUserByEmail(ctx, form.Email)
+	if err != nil {
+		return "", u.errHandler.New(http.StatusConflict, "email already in use")
+	}
 	hashedPassword, err := bcrypt.HashPassword(form.Password1)
 	if err != nil {
 		u.logger.Error(err.Error())
-		return "", u.errHandler.New(http.StatusBadRequest, "something went wrong!")
+		return "", u.errHandler.New(http.StatusInternalServerError, "something went wrong!")
 	}
 	user := domain.User{
 		Name:     form.Name,

@@ -154,7 +154,7 @@ func (h *ApiHandler) extractUserProfileUpdateForm(r *http.Request) (domain.Updat
 	bio := r.FormValue("bio")
 	var file multipart.File
 	var handler *multipart.FileHeader
-	var avatarPath string 
+	var avatarPath string
 	files := r.MultipartForm.File["avatar"]
 	if len(files) != 0 {
 		file, handler, err = r.FormFile("avatar")
@@ -191,4 +191,14 @@ func (h *ApiHandler) saveFileToServer(file multipart.File, handler *multipart.Fi
 		return "", err
 	}
 	return fmt.Sprintf("/static/uploads/%s", filename), nil
+}
+
+func (h *ApiHandler) handleError(w http.ResponseWriter, err error, tmpl string, data BaseTemplateData) {
+	errWithDetails, ok := err.(*errorHandler.Error)
+	if !ok || errWithDetails.HTTPStatus() == http.StatusInternalServerError {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	data.Message = err.Error()
+	h.renderTemplate(w, tmpl, data)
 }

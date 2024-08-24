@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/base64"
 	"net/http"
 	"strconv"
 	"time"
@@ -27,8 +26,7 @@ func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.Login(ctx, form)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "login.html", data)
+		h.handleError(w, err, "login.html", data)
 		return
 	}
 	h.setCookie(w, sessionKey)
@@ -37,25 +35,14 @@ func (h *ApiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	encryptedData, err := base64.URLEncoding.DecodeString(cookie.Value)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	key, err := h.aes.Decrypt(encryptedData)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-	err = h.redis.Remove(ctx, "session", key)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
+	seesion, ok := h.extractSessionFromCookie(r)
+	cookie := &http.Cookie{}
+	if ok {
+		err := h.redis.Remove(ctx, "session", seesion.SessionKey)
+		if err != nil {
+			h.logger.Error(err.Error())
+			return
+		}
 	}
 	cookie.MaxAge = -1
 	cookie.Expires = time.Unix(0, 0)
@@ -85,8 +72,7 @@ func (h *ApiHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.RegisterUser(ctx, form)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "register.html", data)
+		h.handleError(w, err, "register.html", data)
 		return
 	}
 	h.setCookie(w, sessionKey)
@@ -112,15 +98,13 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 	if len(name) == 0 {
 		topics, err = useCase.ListAllTopics(ctx)
 		if err != nil {
-			data.Message = err.Error()
-			h.renderTemplate(w, "topics.html", data)
+			h.handleError(w, err, "topics.html", data)
 			return
 		}
 	} else {
 		topics, err = useCase.SearchTopicByName(ctx, name)
 		if err != nil {
-			data.Message = err.Error()
-			h.renderTemplate(w, "topics.html", data)
+			h.handleError(w, err, "topics.html", data)
 			return
 		}
 	}
@@ -133,12 +117,13 @@ func (h *ApiHandler) Topics(w http.ResponseWriter, r *http.Request) {
 
 func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	sessionValue, ok := h.extractSessionFromCookie(r)
+	baseData := BaseTemplateData{
+		Username:        sessionValue.Username,
+		IsAuthenticated: ok,
+		AvatarURL:       sessionValue.Avatar,
+	}
 	data := HomeTemplateData{
-		BaseTemplateData: BaseTemplateData{
-			Username:        sessionValue.Username,
-			IsAuthenticated: ok,
-			AvatarURL:       sessionValue.Avatar,
-		},
+		BaseTemplateData: baseData,
 	}
 	queryParams := r.URL.Query()
 	searchQuery := queryParams.Get("q")
@@ -148,24 +133,21 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 	messageUseCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	topics, err := topicUseCase.ListAllTopics(ctx)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "home.html", data)
+		h.handleError(w, err, "home.html", baseData)
 		return
 	}
 	data.TopicList = topics.List
 	data.TopicsCount = topics.Count
 	rooms, err := roomUseCase.ListRooms(ctx, searchQuery)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "home.html", data)
+		h.handleError(w, err, "home.html", baseData)
 		return
 	}
 	data.RoomCount = rooms.Count
 	data.RoomList = rooms.List
 	messages, err := messageUseCase.ListAllMessages(ctx)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "home.html", data)
+		h.handleError(w, err, "home.html", baseData)
 		return
 	}
 	data.MessageList = messages.MessageList
@@ -175,18 +157,18 @@ func (h *ApiHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 func (h *ApiHandler) CreateRoomPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	sessionValue := ctx.Value(configs.UserCtxKey).(domain.SessionValue)
+	baseData := BaseTemplateData{
+		IsAuthenticated: true,
+		Username:        sessionValue.Username,
+		AvatarURL:       sessionValue.Avatar,
+	}
 	data := CreateRoomTemplateData{
-		BaseTemplateData: BaseTemplateData{
-			IsAuthenticated: true,
-			Username:        sessionValue.Username,
-			AvatarURL:       sessionValue.Avatar,
-		},
+		BaseTemplateData: baseData,
 	}
 	useCase := domain.Bridge[domain.TopicUseCase](configs.TOPICS_DB_NAME, h.useCases)
 	topics, err := useCase.ListAllTopics(ctx)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "room_form.html", data)
+		h.handleError(w, err, "room_form.html", baseData)
 		return
 	}
 	data.TopicList = topics.List
@@ -209,8 +191,7 @@ func (h *ApiHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
 	err := useCase.CreateRoom(ctx, roomForm)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "room_form.html", data)
+		h.handleError(w, err, "room_form.html", data)
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
@@ -222,9 +203,7 @@ func (h *ApiHandler) UpdateProfilePage(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	user, err := useCase.GetUserByEmail(ctx, sessionValue.Email)
 	if err != nil {
-		data := BaseTemplateData{}
-		data.Message = err.Error()
-		h.renderTemplate(w, "update_user.html", data)
+		h.handleError(w, err, "update_user.html", BaseTemplateData{})
 		return
 	}
 	data := UpdateProfileTemplateData{
@@ -253,8 +232,7 @@ func (h *ApiHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.UserUseCase](configs.USERS_DB_NAME, h.useCases)
 	sessionKey, err := useCase.UpdateInfo(ctx, &updateUser)
 	if err != nil {
-		data := BaseTemplateData{Message: err.Error()}
-		h.renderTemplate(w, "update_user.html", data)
+		h.handleError(w, err, "update_user.html",  BaseTemplateData{})
 		return
 	}
 	h.setCookie(w, sessionKey)
@@ -273,7 +251,7 @@ func (h *ApiHandler) DeleteMessagePage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	message, err := useCase.GetUserMessage(ctx, id)
 	if err != nil {
-		h.renderTemplate(w, "not_found.html", baseData)
+		h.handleError(w, err, "not_found.html", baseData)
 		return
 	}
 	data := DeleteForm{
@@ -289,7 +267,7 @@ func (h *ApiHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	err := useCase.Delete(ctx, id)
 	if err != nil {
-		h.renderTemplate(w, "delete.html", BaseTemplateData{Message: err.Error()})
+		h.handleError(w, err, "delete.html", BaseTemplateData{})
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
@@ -306,8 +284,7 @@ func (h *ApiHandler) ActivitiesPage(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	messages, err := useCase.ListAllMessages(ctx)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "activity.html", baseData)
+		h.handleError(w, err, "activity.html", baseData)
 		return
 	}
 	data := ActivitiesTemplateData{
@@ -335,26 +312,22 @@ func (h *ApiHandler) UserProfilePage(w http.ResponseWriter, r *http.Request) {
 	roomUC := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
 	topics, err := topicUC.ListAllTopics(ctx)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "profile.html", data)
+		h.handleError(w, err, "profile.html", baseData)
 		return
 	}
 	user, err := userUC.GetUserById(ctx, userID)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "profile.html", data)
+		h.handleError(w, err, "profile.html", baseData)
 		return
 	}
 	rooms, err := roomUC.ListUserRooms(ctx, userID)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "profile.html", data)
+		h.handleError(w, err, "profile.html", baseData)
 		return
 	}
 	messages, err := messageUC.ListUserMessages(ctx, userID)
 	if err != nil {
-		data.Message = err.Error()
-		h.renderTemplate(w, "profile.html", data)
+		h.handleError(w, err, "profile.html", baseData)
 		return
 	}
 	data.TopicList = topics.List
@@ -379,20 +352,17 @@ func (h *ApiHandler) RoomPage(w http.ResponseWriter, r *http.Request) {
 	messageUseCase := domain.Bridge[domain.MessageUseCase](configs.MESSAGES_DB_NAME, h.useCases)
 	room, err := roomUseCase.GetRoomById(ctx, roomID)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "room.html", baseData)
+		h.handleError(w, err, "room.html", baseData)
 		return
 	}
 	participants, err := roomUseCase.ListRoomParticipants(ctx, roomID)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "room.html", baseData)
+		h.handleError(w, err, "room.html", baseData)
 		return
 	}
 	messages, err := messageUseCase.ListRoomMessages(ctx, roomID)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "room.html", baseData)
+		h.handleError(w, err, "room.html", baseData)
 		return
 	}
 	data := RoomTemplateData{
@@ -413,8 +383,7 @@ func (h *ApiHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	message := &domain.Message{RoomID: uint(roomID), Body: body}
 	err := useCase.CreateMessage(ctx, message)
 	if err != nil {
-		data := BaseTemplateData{Message: err.Error()}
-		h.renderTemplate(w, "room.html", data)
+		h.handleError(w, err, "room.html", BaseTemplateData{})
 		return
 	}
 	http.Redirect(w, r, "/room/"+id, http.StatusFound)
@@ -432,7 +401,7 @@ func (h *ApiHandler) DeleteRoomPage(w http.ResponseWriter, r *http.Request) {
 	roomID := chi.URLParam(r, "id")
 	room, err := usecase.GetUserRoom(ctx, roomID)
 	if err != nil {
-		h.renderTemplate(w, "not_found.html", baseData)
+		h.handleError(w, err, "not_found.html", baseData)
 		return
 	}
 	data := DeleteForm{
@@ -448,8 +417,7 @@ func (h *ApiHandler) DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	useCase := domain.Bridge[domain.RoomUseCase](configs.ROOMS_DB_NAME, h.useCases)
 	err := useCase.DeleteUserRoom(ctx, roomID)
 	if err != nil {
-		data := BaseTemplateData{Message: err.Error()}
-		h.renderTemplate(w, "delete.html", data)
+		h.handleError(w, err, "room.html", BaseTemplateData{})
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
@@ -471,14 +439,12 @@ func (h *ApiHandler) UpdateRoomPage(w http.ResponseWriter, r *http.Request) {
 	}
 	room, err := roomUsecase.GetUserRoom(ctx, roomID)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "room_form.html", baseData)
+		h.handleError(w, err, "room_form.html", baseData)
 		return
 	}
 	topics, err := topicUsecase.ListAllTopics(ctx)
 	if err != nil {
-		baseData.Message = err.Error()
-		h.renderTemplate(w, "room_form.html", baseData)
+		h.handleError(w, err, "room_form.html", baseData)
 		return
 	}
 	data.TopicList = topics.List
@@ -501,7 +467,7 @@ func (h *ApiHandler) UpdateRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	err := useCase.UpdateRoom(ctx, roomID, roomForm)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		h.handleError(w, err, "room_form.html", BaseTemplateData{})
 		return
 	}
 	http.Redirect(w, r, "/home", http.StatusFound)
