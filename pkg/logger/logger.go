@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -15,7 +17,7 @@ type Format int
 type LogLevel int
 
 const (
-	JSON = iota
+	JSON Format = iota
 	TEXT
 )
 
@@ -46,14 +48,19 @@ type Logger interface {
 func New(outputFormat Format, level LogLevel) (Logger, error) {
 	var logger zerolog.Logger
 
+	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
+		return filepath.ToSlash(file) + ":" + strconv.Itoa(line)
+	}
+	zerolog.CallerSkipFrameCount = 3
+
 	switch outputFormat {
 	case JSON:
-		logger = log.Output(os.Stdout)
+		logger = log.Output(os.Stdout).With().Caller().Logger()
 	case TEXT:
 		consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
-		logger = log.Output(consoleWriter)
+		logger = log.Output(consoleWriter).With().Caller().Logger()
 	default:
-		return nil, errors.New("unsoppurted format")
+		return nil, errors.New("unsupported format")
 	}
 
 	switch level {
@@ -96,7 +103,7 @@ func (l *ZerologLogger) Debug(msg string, args ...any) {
 }
 
 func (l *ZerologLogger) DebugContext(ctx context.Context, msg string, args ...any) {
-	l.logger.Debug().Ctx(ctx).Fields(args).Msg("")
+	l.logger.Debug().Ctx(ctx).Fields(args).Msg(msg)
 }
 
 func (l *ZerologLogger) Info(msg string, args ...any) {
@@ -120,7 +127,7 @@ func (l *ZerologLogger) Error(msg string, args ...any) {
 }
 
 func (l *ZerologLogger) ErrorContext(ctx context.Context, msg string, args ...any) {
-	l.logger.Error().Fields(args).Msg(msg)
+	l.logger.Error().Ctx(ctx).Fields(args).Msg(msg)
 }
 
 func (l *ZerologLogger) Fatal(msg string, args ...any) {
